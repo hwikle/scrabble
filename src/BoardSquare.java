@@ -36,9 +36,10 @@ public class BoardSquare {
         if (this.tile.isPresent()) {
             return " " + Character.toString(this.tile.get().getLetter());
         } else {
-            String s = Integer.toString(wordMultiplier) + Integer.toString(letterMultiplier);
-            s.replaceAll("1", ".");
-            return " ";
+            String s = String.valueOf(wordMultiplier) + String.valueOf(letterMultiplier);
+            s = s.replaceAll("1", ".");
+
+            return s;
         }
     }
 }

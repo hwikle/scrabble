@@ -1,4 +1,3 @@
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -55,31 +54,36 @@ public class Board {
         ArrayList<String> tileStrings;
         String tileStr;
         BoardSquare sq;
+        int idx;
 
         for (int i=0; i<this.rows; i++) {
             tileStrings = new ArrayList<String>(Arrays.asList(rows[i].split(" ")));
+
+            ArrayList<String> toRemove = new ArrayList<>();
+
+            // Remove empty strings
+            for (String ts: tileStrings) {
+                if (ts.equals("")) {
+                    toRemove.add(ts);
+                }
+            }
+
+            tileStrings.removeAll(toRemove);
 
             for (int j=0; j<this.columns; j++) {
                 tileStr = tileStrings.get(j);
                 sq = this.getSquareAt(new BoardLocation(i, j)).get();
 
-                if (Character.isLetter(tileStrings.get(j).charAt(0))) {
+                if (Character.isLetter(tileStr.charAt(0))) {
                     sq.addTile(new LetterTile(tileStr.charAt(0)));
                 } else {
-                    if (rows[i].charAt(2*j) != '.') {
-                        sq.setWordMultiplier(rows[i].charAt(2 * j));
-                    }
-                    if (rows[i].charAt(2*j + 1) != '.') {
-                        sq.setWordMultiplier(rows[i].charAt(2 * j + 1));
+                    if (Character.isDigit(tileStr.charAt(0))) {
+                        sq.setWordMultiplier(Character.digit(tileStr.charAt(0), 10));
+                    } else if (Character.isDigit(tileStr.charAt(1))) {
+                        sq.setWordMultiplier(Character.digit(tileStr.charAt(1), 10));
                     }
                 }
             }
-        }
-
-        BoardSquare sq;
-
-        for (int i=0; i<this.rows; i++) {
-
         }
     }
 
@@ -238,6 +242,10 @@ public class Board {
         for (int i=0; i<this.rows; i++) {
             for (int j=0; j<this.columns; j++) {
                 s += this.squares[i][j].toString();
+
+                if (j != this.columns) {
+                    s += " ";
+                }
             }
             s += "\n";
         }
