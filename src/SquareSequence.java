@@ -16,6 +16,15 @@ public class SquareSequence extends ArrayList<BoardSquare> {
         return seq;
     }
 
+    public boolean hasAnyTiles() {
+        for (BoardSquare sq: this) {
+            if (sq.hasTile()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String toRegex() {
         String s = "";
         int repeatedCharacters = 0;
@@ -49,7 +58,7 @@ public class SquareSequence extends ArrayList<BoardSquare> {
             } else {
                 if (repeatedChars >= 1) {
                     if (tray.hasBlank()) {
-                        s += "x";
+                        s += "[a-z]";
                     } else {
                         s += tray.toRegexRange();
                     }

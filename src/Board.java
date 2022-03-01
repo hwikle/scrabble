@@ -113,8 +113,8 @@ public class Board {
 
         for (int i=0; i<numSquares; i++) {
             if (next.isPresent()) {
-                squares.add(this.getSquareAt(loc).get());
-                next = this.getNextLocation(loc, o);
+                squares.add(this.getSquareAt(next.get()).get());
+                next = this.getNextLocation(next.get(), o);
             } else {
                 break;
             }

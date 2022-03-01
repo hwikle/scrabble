@@ -45,7 +45,7 @@ public class Dictionary {
         String regex = seq.toRegex(tray);
         Pattern r = Pattern.compile(regex);
 
-        System.out.println("Querying with regex: " + regex + "...");
+        //System.out.println("Querying with regex: " + regex + "...");
 
         for (int i=0; i<this.words.size(); i++) {
             Matcher m = r.matcher(this.words.get(i));
