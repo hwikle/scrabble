@@ -1,9 +1,31 @@
-import javafx.geometry.Point2D;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
 
 enum Orientation {
     ACROSS,
-    DOWN
+    DOWN,
+    BACKWARDS,
+    UP,
+    DIAG_ACROSS_DOWN,
+    DIAG_ACROSS_UP,
+    DIAG_BACK_DOWN,
+    DIAG_BACK_UP;
+
+    public Orientation reverse() {
+        return switch (this) {
+            case ACROSS -> BACKWARDS;
+            case DOWN -> UP;
+            case BACKWARDS -> ACROSS;
+            case UP -> DOWN;
+            case DIAG_ACROSS_DOWN -> DIAG_BACK_UP;
+            case DIAG_ACROSS_UP -> DIAG_BACK_DOWN;
+            case DIAG_BACK_DOWN -> DIAG_ACROSS_UP;
+            case DIAG_BACK_UP -> DIAG_ACROSS_DOWN;
+        };
+    }
 }
 
 public class Board {
@@ -15,11 +37,11 @@ public class Board {
         this.rows = rows;
         this.columns = cols;
 
-        BoardSquare[][] squares = new BoardSquare [rows][cols];
+        squares = new BoardSquare [rows][cols];
 
         for (int i=0; i<rows; i++) {
             for (int j=0; j<cols; j++) {
-                squares[i][j] = new BoardSquare();
+                this.squares[i][j] = new BoardSquare();
             }
         }
     }
@@ -28,17 +50,67 @@ public class Board {
         this(width, width);
     }
 
-    public BoardSquare getSquareAt(BoardLocation loc) {
-        return this.squares[loc.getRow()][loc.getColumn()];
+    public void populateFromString(String s) {
+        String[] rows = s.split("\n");
+        ArrayList<String> tileStrings;
+        String tileStr;
+        BoardSquare sq;
+
+        for (int i=0; i<this.rows; i++) {
+            tileStrings = new ArrayList<String>(Arrays.asList(rows[i].split(" ")));
+
+            for (int j=0; j<this.columns; j++) {
+                tileStr = tileStrings.get(j);
+                sq = this.getSquareAt(new BoardLocation(i, j)).get();
+
+                if (Character.isLetter(tileStrings.get(j).charAt(0))) {
+                    sq.addTile(new LetterTile(tileStr.charAt(0)));
+                } else {
+                    if (rows[i].charAt(2*j) != '.') {
+                        sq.setWordMultiplier(rows[i].charAt(2 * j));
+                    }
+                    if (rows[i].charAt(2*j + 1) != '.') {
+                        sq.setWordMultiplier(rows[i].charAt(2 * j + 1));
+                    }
+                }
+            }
+        }
+
+        BoardSquare sq;
+
+        for (int i=0; i<this.rows; i++) {
+
+        }
     }
 
-    public ArrayList<BoardSquare> getSquares(BoardLocation loc, int numSquares, Orientation o) {
-        ArrayList<BoardSquare> squares = new ArrayList<>();
+    public void setLetterMultipliers(int[][] multipliers) {}
+
+    public void setWordMultipliers(int[][] multipliers) {}
+
+    public BoardLocation getCenter() {
+        // NOTE: If board dimensions are even, will return location to right of
+        // and below center
+        return new BoardLocation(this.rows/2, this.columns/2);
+    }
+
+    public Optional<BoardSquare> getSquareAt(BoardLocation loc) {
+        Optional<BoardSquare> square = null;
+
+        if (this.isOnBoard(loc)) {
+            square = Optional.of(this.squares[loc.getRow()][loc.getColumn()]);
+        }
+
+        return square;
+    }
+
+    public SquareSequence getSquares(BoardLocation loc, int numSquares, Orientation o) {
+        SquareSequence squares = new SquareSequence();
+        Optional<BoardLocation> next = Optional.of(loc);
 
         for (int i=0; i<numSquares; i++) {
-            if (this.isOnBoard(loc)) {
-                squares.add(this.getSquareAt(loc));
-                loc = this.getNextLocation(loc, o);
+            if (next.isPresent()) {
+                squares.add(this.getSquareAt(loc).get());
+                next = this.getNextLocation(loc, o);
             } else {
                 break;
             }
@@ -47,21 +119,42 @@ public class Board {
         return squares;
     }
 
-    public BoardLocation getNextLocation(BoardLocation loc, Orientation o) {
+    public Optional<BoardLocation> getNextLocation(BoardLocation loc, Orientation o) {
         BoardLocation next;
 
-        if (o == Orientation.ACROSS) {
-            next = new BoardLocation(loc.getRow(), loc.getColumn() + 1);
-        } else {
-            next = new BoardLocation(loc.getRow() + 1, loc.getColumn());
-        }
+        next = switch (o){
+            case ACROSS -> new BoardLocation(loc.getRow(), loc.getColumn() + 1);
+            case DOWN -> new BoardLocation(loc.getRow() + 1, loc.getColumn());
+            case BACKWARDS -> new BoardLocation(loc.getRow(), loc.getColumn() - 1);
+            case UP -> new BoardLocation(loc.getRow() - 1, loc.getColumn());
+            case DIAG_ACROSS_DOWN -> new BoardLocation(loc.getRow() + 1, loc.getColumn() + 1);
+            case DIAG_ACROSS_UP -> new BoardLocation(loc.getRow() - 1, loc.getColumn() + 1);
+            case DIAG_BACK_DOWN -> new BoardLocation(loc.getRow() + 1, loc.getColumn() - 1);
+            case DIAG_BACK_UP -> new BoardLocation(loc.getRow() - 1, loc.getColumn() - 1);
+        };
+
+        Optional<BoardLocation> validatedNext = Optional.ofNullable(null);
 
         if (this.isOnBoard(next)) {
-            return next;
-        } else {
-            // NULL Location
-            return new BoardLocation(-1, -1);
+            validatedNext = Optional.of(next);
         }
+
+        return validatedNext;
+    }
+
+    public Optional<BoardLocation> getPreviousLocation(BoardLocation loc, Orientation o) {
+        return getNextLocation(loc, o.reverse());
+    }
+
+    public ArrayList<BoardLocation> getNeighbors(BoardLocation loc) {
+        ArrayList<BoardLocation> neighbors = new ArrayList<>();
+
+        neighbors.add(new BoardLocation(loc.getRow(), loc.getColumn()+1));
+        neighbors.add(new BoardLocation(loc.getRow(), loc.getColumn()-1));
+        neighbors.add(new BoardLocation(loc.getRow()+1, loc.getColumn()));
+        neighbors.add(new BoardLocation(loc.getRow()-1, loc.getColumn()));
+
+        return neighbors;
     }
 
     public boolean isOnBoard(BoardLocation loc) {
@@ -74,9 +167,81 @@ public class Board {
         return true;
     }
 
-    public void setLetterMultipliers(int[][] multipliers) {}
+    public ArrayList<BoardLocation> getAnchors() {
+        HashSet<BoardLocation> anchors = new HashSet<>();
+        BoardLocation loc;
+        int letterTiles = 0;
 
-    public void setWordMultipliers(int[][] multipliers) {}
+        for (int i=0; i<this.rows; i++) {
+            for (int j=0; j<this.columns; j++) {
+                loc = new BoardLocation(i, j);
+                if (this.getSquareAt(loc).get().hasTile()) {
+                    anchors.add(loc);
+                    anchors.addAll(this.getNeighbors(loc));
+                    letterTiles++;
+                }
+            }
+        }
 
-    public void playWord(ArrayList<LetterTile> word, Point2D location, Orientation o) {}
+        System.out.println(letterTiles + " letter tiles");
+        System.out.println((anchors.size() - letterTiles) + " tile-adjacent anchors");
+
+        ArrayList<BoardLocation> anchorList = new ArrayList<>();
+        anchorList.addAll(anchors);
+
+        return anchorList;
+    }
+
+    public boolean play(ArrayList<LetterTile> word, BoardLocation loc, Orientation o) {
+        Optional<BoardSquare> sq;
+        Optional<BoardLocation> next = Optional.of(loc);
+
+        for (int i=0; i<word.size(); i++) {
+            if (!next.isPresent()) {
+                return false;
+            }
+
+            sq = this.getSquareAt(next.get());
+            sq.get().addTile(word.get(i));
+            next = this.getNextLocation(next.get(), o);
+        }
+            return true;
+    }
+
+    public boolean play(String word, BoardLocation loc, Orientation o) {
+        ArrayList<LetterTile> tiles = new ArrayList<>();
+
+        for (char c: word.toCharArray()) {
+            tiles.add(new LetterTile(c));
+        }
+
+        return this.play(tiles, loc, o);
+    }
+
+    private boolean wordFits(ArrayList<LetterTile> word, BoardLocation loc, Orientation o) {
+        int wordLength = word.size();
+        Optional<BoardLocation> next = Optional.of(loc);
+
+        for (int i=0; i<wordLength; i++) {
+            if (!next.isPresent()) {
+                return false;
+            }
+            next = this.getNextLocation(loc, o);
+        }
+
+        return true;
+    }
+
+    public String toString() {
+        String s = "";
+
+        for (int i=0; i<this.rows; i++) {
+            for (int j=0; j<this.columns; j++) {
+                s += this.squares[i][j].toString();
+            }
+            s += "\n";
+        }
+
+        return s;
+    }
 }

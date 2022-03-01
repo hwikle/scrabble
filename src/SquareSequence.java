@@ -1,49 +1,65 @@
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class SquareSequence extends ArrayList<BoardSquare> {
 
+    public static SquareSequence fromBoard(Board b, BoardLocation loc, Orientation o, int numSquares) {
+        SquareSequence seq = new SquareSequence();
+        Optional<BoardSquare> square = b.getSquareAt(loc);
+
+        while (square.isPresent() && numSquares > 0) {
+            seq.add(square.get());
+            loc = b.getNextLocation(loc, o).get();
+            numSquares--;
+        }
+
+        return seq;
+    }
+
     public String toRegex() {
         String s = "";
-        char letter;
+        int repeatedCharacters = 0;
 
         for (BoardSquare sq: this) {
-            letter = sq.getTile().getLetter();
+            if (!sq.hasTile()) {
+                repeatedCharacters++;
+            } else {
+                if (repeatedCharacters >= 1) {
+                    s += ".";
+                }
+                if (repeatedCharacters > 1) {
+                    s += "{" + repeatedCharacters + "}";
+                }
 
-            switch (letter) {
-                case '0':
-                case ' ':
-                    s += '.';
-                    break;
-                default:
-                    s += letter;
+                s += sq.getTile().get().getLetter();
             }
         }
+
 
         return "^" + s + "$";
      }
 
     public String toRegex(LetterTray tray) {
         String s = "";
-        char letter;
         int repeatedChars = 0;
 
         for (BoardSquare sq: this) {
-            letter = sq.getTile().getLetter();
-
-            switch (letter) {
-                case '0':
-                case ' ':
-                    repeatedChars++;
-                    break;
-                default:
-                    if (repeatedChars >= 1) {
+            if (!sq.hasTile()) {
+                repeatedChars++;
+            } else {
+                if (repeatedChars >= 1) {
+                    if (tray.hasBlank()) {
+                        s += "x";
+                    } else {
                         s += tray.toRegexRange();
                     }
-                    if (repeatedChars > 1) {
-                        s += "{" + repeatedChars + "}";
-                    }
-                    repeatedChars = 0;
-                    s += letter;
+                }
+                if (repeatedChars > 1) {
+                    s += "{" + repeatedChars + "}";
+                }
+
+                s += sq.getTile().get().getLetter();
+                repeatedChars = 0;
             }
         }
 
