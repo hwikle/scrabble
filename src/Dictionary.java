@@ -7,16 +7,16 @@ import java.util.regex.*;
 
 public class Dictionary {
     private ArrayList<String> words = new ArrayList<>();
-    private Scanner freader;
 
     public Dictionary(String fname, double addChance) {
+        Scanner freader;
         File infile = new File(fname);
         Random r = new Random();
 
         try{
-            this.freader = new Scanner(infile);
+            freader = new Scanner(infile);
         } catch (FileNotFoundException e) {
-            this.freader = new Scanner(System.in);
+            freader = new Scanner(System.in);
         }
 
         while (freader.hasNextLine()) {

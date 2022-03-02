@@ -12,6 +12,14 @@ public class BoardSquare {
         this.wordMultiplier = wordMultiplier;
     }
 
+    public int getLetterMultiplier() {
+        return letterMultiplier;
+    }
+
+    public int getWordMultiplier() {
+        return wordMultiplier;
+    }
+
     public void setLetterMultiplier(int i) {
         this.letterMultiplier = i;
     }
@@ -25,7 +33,13 @@ public class BoardSquare {
     }
 
     public void addTile(LetterTile t) {
-        this.tile = Optional.ofNullable(t);
+        this.tile = Optional.of(t);
+        this.resetMultipliers();
+    }
+
+    private void resetMultipliers() {
+        this.letterMultiplier = 1;
+        this.wordMultiplier = 1;
     }
 
     public Optional<LetterTile> getTile() {

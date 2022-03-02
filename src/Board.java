@@ -80,7 +80,7 @@ public class Board {
                     if (Character.isDigit(tileStr.charAt(0))) {
                         sq.setWordMultiplier(Character.digit(tileStr.charAt(0), 10));
                     } else if (Character.isDigit(tileStr.charAt(1))) {
-                        sq.setWordMultiplier(Character.digit(tileStr.charAt(1), 10));
+                        sq.setLetterMultiplier(Character.digit(tileStr.charAt(1), 10));
                     }
                 }
             }
@@ -234,6 +234,28 @@ public class Board {
         }
 
         return true;
+    }
+
+    public int score(Move m, LetterScores scores) {
+        // Needs to take into account new words created by crossing
+        int score = 0;
+        int wordMultiplier = 1;
+        Optional<BoardLocation> loc = Optional.of(m.getLocation());
+        BoardSquare sq;
+
+        for (int i=0; i<m.getWord().length(); i++) {
+            if (loc.isPresent()) {
+                sq = this.getSquareAt(loc.get()).get();
+                wordMultiplier *= sq.getWordMultiplier();
+                score += scores.get(m.getWord().charAt(i)) * sq.getLetterMultiplier();
+                loc = this.getNextLocation(loc.get(), m.getOrientation());
+            } else {
+                // If invalid move, score is 0
+                return 0;
+            }
+        }
+
+        return score * wordMultiplier;
     }
 
     public String toString() {

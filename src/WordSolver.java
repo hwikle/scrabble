@@ -9,12 +9,18 @@ public class WordSolver {
         b.populateFromString(boardsString);
 
         LetterTray t = new LetterTray("toloeri");
-        Dictionary d = new Dictionary("/Users/hank/IdeaProjects/cs351/scrabble/sowpods.txt");
+        Dictionary d = new Dictionary("/Users/hank/IdeaProjects/cs351/scrabble/resources/sowpods.txt");
+        LetterScores scores = new LetterScores("/Users/hank/IdeaProjects/cs351/scrabble/resources/letterscores.txt");
 
         BoardLocation loc;
         SquareSequence seq;
-        Orientation o = Orientation.ACROSS;
-        ArrayList<String> words = new ArrayList<>();
+        Orientation o = Orientation.DOWN;
+        ArrayList<String> words;
+
+        int score;
+        int maxScore = 0;
+        String bestWord = "";
+        BoardLocation bestLoc = new BoardLocation(0, 0);
 
         for (int i=0; i<b.rows; i++) {
             for (int j=0; j<b.columns; j++) {
@@ -23,13 +29,20 @@ public class WordSolver {
                 for (int k = 2; k < b.columns + 1; k++) {
                     seq = b.getSquares(loc, k, o);
                     if (seq.hasAnyTiles()) {
-                        words.addAll(d.Query(seq, t));
+                        words = d.Query(seq, t);
+
+                        for (String w: words) {
+                            score = b.score(new Move(w, loc, o), scores);
+                            if (score > maxScore) {
+                                bestWord = w;
+                                maxScore = score;
+                                bestLoc = loc;
+                            }
+                        }
                     }
                 }
             }
         }
-
-        System.out.println(words);
-        System.out.println("Found " + words.size() + " valid words");
+        System.out.println(bestWord + " at " + bestLoc + " for " + maxScore + " points");
     }
 }
