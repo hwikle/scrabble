@@ -37,7 +37,7 @@ public class Board {
         ArrayList<String> tileStrings;
         String tileStr;
         BoardSquare sq;
-        int idx;
+        LetterTile newTile;
 
         for (int i=0; i<this.rows; i++) {
             tileStrings = new ArrayList<String>(Arrays.asList(rows[i].split(" ")));
@@ -58,7 +58,12 @@ public class Board {
                 sq = this.getSquareAt(new BoardLocation(i, j)).get();
 
                 if (Character.isLetter(tileStr.charAt(0))) {
-                    sq.addTile(new LetterTile(tileStr.charAt(0)));
+                    newTile = new LetterTile(tileStr.charAt(0));
+
+                    if (Character.isUpperCase(tileStr.charAt(0))) {
+                        newTile.setBlank();
+                    }
+                    sq.addTile(newTile);
                 } else {
                     if (Character.isDigit(tileStr.charAt(0))) {
                         //System.out.println(Character.digit(tileStr.charAt(0), 10));
@@ -595,11 +600,13 @@ public class Board {
 
         for (int i=0; i<w.length(); i++) {
             sq = w.get(i, this);
-            score += ls.get(sq.getTile().get().getLetter()) * sq.getLetterMultiplier();
+            if (!sq.getTile().get().isBlank()) {
+                score += ls.get(sq.getTile().get().getLetter()) * sq.getLetterMultiplier();
+            }
             wordMult *= sq.getWordMultiplier();
         }
 
-        return score;
+        return score * wordMult;
     }
 
     public int scoreSequence(Move m, SquareSequence seq, LetterScores ls) {
