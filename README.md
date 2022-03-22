@@ -15,8 +15,11 @@
 ## Solver
 
 - [ ] Fix edge-of-board bug
-- [ ] Incorporate crosswords into algorithm
-  - [ ] Fix bug in wordFromMove method
+- [ ] Incorporate crosswords into move-finding algorithm
+  - [ ] ~~Fix bug in wordFromMove method~~
+  - [ ] Recursive calls must maintain reference to full tree
+- [ ] Include crosswords in score computation
+- [ ] Create separate Scorer object?
 
 ## Full Game
 
