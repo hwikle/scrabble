@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class WordTree extends HashMap<Character, WordTree> {
-    private final char TERM = '\n';
+    private final char TERM = '\0';
 
     public char getTerminator() {return this.TERM;}
 
@@ -46,7 +46,6 @@ public class WordTree extends HashMap<Character, WordTree> {
         System.out.println("Query: " + s);
 
         while (s.length() > 0 && !result.keySet().isEmpty()) {
-            //result = result.getOrDefault(s.charAt(0), new WordTree());
             result = result.getOrDefault(s.charAt(0), new WordTree());
             s = s.substring(1);
         }
@@ -55,6 +54,7 @@ public class WordTree extends HashMap<Character, WordTree> {
     }
 
     public boolean contains(String s) {
+        s = s.toUpperCase();
         return !this.query(s).keySet().isEmpty();
     }
 
@@ -69,7 +69,7 @@ public class WordTree extends HashMap<Character, WordTree> {
         ArrayList<String> words = new ArrayList<>();
 
         for (Character c: this.keySet()) {
-            if (c == '\n') {
+            if (c == TERM) {
                 words.add("");
             } else {
                 for (String s : this.get(c).getAllWords()) {
