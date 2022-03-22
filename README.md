@@ -16,6 +16,7 @@
 
 - [ ] Fix edge-of-board bug
 - [ ] Incorporate crosswords into algorithm
+  - [ ] Fix bug in wordFromMove method
 
 ## Full Game
 
