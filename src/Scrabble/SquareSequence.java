@@ -1,5 +1,8 @@
+package Scrabble;
+
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Collections;
 
 public class SquareSequence extends ArrayList<BoardSquare> {
 
@@ -16,6 +19,23 @@ public class SquareSequence extends ArrayList<BoardSquare> {
         return seq;
     }
 
+    private Optional<BoardSquare> getFirstTile() {
+        for (BoardSquare sq: this) {
+            if (sq.hasTile()) {
+                return Optional.of(sq);
+            }
+        }
+        return null;
+    }
+
+    private Optional<BoardSquare> getLastTile() {
+        SquareSequence reverse = new SquareSequence();
+        Collections.copy(reverse, this);
+        Collections.reverse(reverse);
+
+        return reverse.getFirstTile();
+    }
+
     public boolean hasAnyTiles() {
         for (BoardSquare sq: this) {
             if (sq.hasTile()) {
@@ -23,6 +43,22 @@ public class SquareSequence extends ArrayList<BoardSquare> {
             }
         }
         return false;
+    }
+
+    public int score(LetterScores ls) {
+        int wordMultiplier = 1;
+        int score = 0;
+        LetterTile t;
+
+        for (BoardSquare sq: this) {
+            if (sq.hasTile()) {
+                t = sq.getTile().get();
+                score += sq.getLetterMultiplier()*ls.get(t.getLetter());
+                wordMultiplier *= sq.getWordMultiplier();
+            }
+        }
+
+        return score * wordMultiplier;
     }
 
     public String toRegex() {
@@ -80,5 +116,27 @@ public class SquareSequence extends ArrayList<BoardSquare> {
         }
 
         return "^" + s + "$";
+    }
+
+    public String toVariableLengthRegex(Board b, LetterTray tray) {
+        String s = "";
+        BoardSquare sq;
+        int repeatedBlanks = 0;
+        boolean anchorEncountered = false;
+
+        int i = 0;
+
+        while (!anchorEncountered) {
+            sq = this.get(i);
+            anchorEncountered = b.isAnchor(sq);
+
+            if (!sq.hasTile()) {
+                repeatedBlanks++;
+            } else {
+
+            }
+        }
+
+        return s;
     }
 }

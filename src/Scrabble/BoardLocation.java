@@ -1,3 +1,5 @@
+package Scrabble;
+
 public class BoardLocation {
     private int row;
     private int column;
@@ -20,10 +22,6 @@ public class BoardLocation {
         return column;
     }
 
-    public boolean isNull() {
-        return (this.row == -1);
-    }
-
     @Override
     public int hashCode() {
         return (2^this.row * 3^this.column);
@@ -36,7 +34,7 @@ public class BoardLocation {
         } else if (!(o instanceof BoardLocation)) {
             return false;
         } else {
-            return (this.row == ((BoardLocation) o).row) || (this.column == ((BoardLocation) o).column);
+            return ((this.row == ((BoardLocation) o).row) && (this.column == ((BoardLocation) o).column));
         }
     }
 

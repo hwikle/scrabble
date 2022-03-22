@@ -1,9 +1,11 @@
+package Scrabble;
+
 import java.util.Optional;
 
-public class BoardSquare {
+public class BoardSquare implements Cloneable {
     private int letterMultiplier = 1;
     private int wordMultiplier = 1;
-    private Optional<LetterTile> tile = Optional.ofNullable(null);
+    private Optional<LetterTile> tile = Optional.empty()    ;
 
     public BoardSquare() {}
 
@@ -34,7 +36,7 @@ public class BoardSquare {
 
     public void addTile(LetterTile t) {
         this.tile = Optional.of(t);
-        this.resetMultipliers();
+        //this.resetMultipliers();
     }
 
     private void resetMultipliers() {

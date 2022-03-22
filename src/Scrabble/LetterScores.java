@@ -1,3 +1,5 @@
+package Scrabble;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +25,7 @@ public class LetterScores extends HashMap<Character,Integer> {
 
         while (s.hasNextLine()) {
             pair = s.nextLine().split(" ");
-            this.put(pair[0].toLowerCase().charAt(0), Integer.valueOf(pair[1]));
+            this.put(pair[0].toUpperCase().charAt(0), Integer.valueOf(pair[1]));
         }
     }
 
