@@ -139,4 +139,18 @@ public class SquareSequence extends ArrayList<BoardSquare> {
 
         return s;
     }
+
+    public boolean fitsWith(Board b, Move m) {
+        BoardLocation loc;
+        for (BoardSquare sq: this) {
+            loc = b.locationFromSquare(sq);
+            if (sq.hasTile() && m.getLocations().contains(loc)) {
+                return false;
+            } else if (!sq.hasTile() && !m.getLocations().contains(loc)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

@@ -58,6 +58,10 @@ public class WordTree extends HashMap<Character, WordTree> {
         return !this.query(s).keySet().isEmpty();
     }
 
+    public boolean containsWord(String word) {
+        return this.query(word).keySet().contains(this.TERM);
+    }
+
     public boolean isEmpty() {
         return this.keySet().isEmpty();
     }

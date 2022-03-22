@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class Move extends ArrayList<TileLocationPair> {
+    private Orientation o;
 
     public Move() {}
 
@@ -34,20 +35,55 @@ public class Move extends ArrayList<TileLocationPair> {
         return locs;
     }
 
+    public Optional<LetterTile> tileByLocation(BoardLocation loc) {
+        Optional<LetterTile> tile = Optional.empty();
+
+        for (TileLocationPair p: this) {
+            if (p.getLocation().equals(loc)) {
+                return Optional.of(p.getTile());
+            }
+        }
+
+        return tile;
+    }
+
     public boolean isSingleTile() {
         return (this.size() == 1);
     }
 
-    public Optional<Orientation> getOrientation() {
-        // must be Optional since single letter plays have no defined orientation
-        Optional<Orientation> o = Optional.empty();
+    public boolean isLinear() {
+        ArrayList<BoardLocation> locs = this.getLocations();
+        Orientation o;
+
+        if (locs.size() < 2) {
+            return true;
+        } else if (locs.get(0).getRow() == locs.get(1).getRow()) {
+            o = Orientation.ACROSS;
+        } else if (locs.get(0).getColumn() == locs.get(1).getColumn()) {
+            o = Orientation.DOWN;
+        } else {
+            return false;
+        }
+
+        for (int i=2; i<locs.size(); i++) {
+            if (!(locs.get(0).isLinearWith(locs.get(i), o))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Orientation getOrientation() {
+        Orientation o;
 
         if (this.size() > 1) {
             if (this.get(0).getLocation().getRow() == this.get(1).getLocation().getRow()) {
-                o = Optional.of(Orientation.ACROSS);
+                o = Orientation.ACROSS;
             } else {
-                o = Optional.of(Orientation.DOWN);
+                o = Orientation.DOWN;
             }
+        } else {
+            o = Orientation.ACROSS; // By convention, define single-letter moves as ACROSS
         }
 
         return o;

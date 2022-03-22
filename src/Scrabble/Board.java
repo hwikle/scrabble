@@ -91,78 +91,81 @@ public class Board {
         return square;
     }
 
-    public ArrayList<Move> getPossibleMoves(BoardLocation loc, Orientation o, LetterTray tray, WordTree tree) {
+    public ArrayList<Move> getPossibleMoves(BoardLocation loc, Orientation o, LetterTray tray, WordTree tree, WordTree sub) {
         ArrayList<Move> moves = new ArrayList<>();
         char c;
 
         assert this.isOnBoard(loc);
 
         if (tray.size() >= 0) {
-            Optional<LetterTile> t = this.getTileAt(loc); // Empty could mean multiple things; need check that loc is on board
-            Optional<BoardLocation> next = this.getNextLocation(loc, o); // Could be empty
-            Optional<String> cross;
-            BoardLocation start, end;
-
-            /*
-            if (!next.isPresent()) {
-                if (!t.isEmpty()) {
-                    return new ArrayList<Move>();
-                } else {
-
-                }
-            }
-
-             */
+            Optional<LetterTile> t = this.getTileAt(loc);
+            Optional<BoardLocation> next = this.getNextLocation(loc, o);
+            String cross;
 
             if (t.isPresent()) {
-                if (tree.keySet().contains(t.get().getLetter())) {
+                if (sub.keySet().contains(t.get().getLetter())) {
                     c = t.get().getLetter();
 
-                    // I think edge-of-board bug is here
                     if (next.isPresent()) {
-                        moves.addAll(this.getPossibleMoves(next.get(), o, tray, tree.get(c)));
-                    } else if (tree.get(c).keySet().contains(tree.getTerminator())) {
+                        moves.addAll(this.getPossibleMoves(next.get(), o, tray, tree, sub.get(c)));
+                    } else if (tree.get(c).keySet().contains(sub.getTerminator())) {
                         moves.add(new Move());
                     }
                 }
             } else {
-                for (char ch : tree.keySet()) {
-                    if (ch == tree.getTerminator()) {
+                for (char ch : sub.keySet()) {
+                    if (ch == sub.getTerminator()) {
                         moves.add(new Move());
-                        // Possibly here as well
                     } else if (next.isPresent() && tray.hasLetter(ch)) {
-                    //} else if (tray.hasLetter(ch)) {
 
                         LetterTray trayCopy = new LetterTray();
                         trayCopy.addAll(tray);
                         LetterTile tile = trayCopy.getTileByLetter(ch).get();
 
                         // Look for crossword
+                        /*
                         start = this.getSequenceStart(loc, new Move(new TileLocationPair(tile, loc)), o.getPerpendicular()).get();
-                        end = this.getSequenceEnd(loc, new Move(new TileLocationPair(tile, loc)), o.getPerpendicular()).get();
+                        end = this.getSequenceEnd(loc, new Move(new TileLocationPair(tile, loc)), o.getPerpendicular()).get()
+                         */
 
-                        if (!start.equals(end)) {
-                            cross = this.wordFromMove(start, end, new Move(new TileLocationPair(tile, loc)));
 
-                            if (!tree.keySet().contains(cross.get())) {
+                        cross = this.getCrossword(new TileLocationPair(tile, loc), o);
+
+                        if (cross.length() > 1) {
+                            System.out.println(cross);
+
+                            if (!tree.containsWord(cross)) {
                                 continue;
                             }
                         }
 
+                        /*
+                        if (!tree.keySet().contains(cross.get())) {
+                            continue;
+                        }
+
+                         */
+
                         trayCopy.remove(tile);
 
-                        for (Move m : this.getPossibleMoves(next.get(), o, trayCopy, tree.get(ch))) {
+                        for (Move m : this.getPossibleMoves(next.get(), o, trayCopy, tree, sub.get(ch))) {
                             Move newMove = new Move();
                             newMove.add(new TileLocationPair(tile, loc));
                             newMove.addAll(m);
                             moves.add(newMove);
                         }
                     } else if (tray.hasLetter(ch)) {
-                        if (tree.get(ch).keySet().contains(tree.getTerminator())) {
+                        if (sub.get(ch).keySet().contains(sub.getTerminator())) {
                             LetterTray trayCopy = new LetterTray();
                             trayCopy.addAll(tray);
                             LetterTile tile = trayCopy.getTileByLetter(ch).get();
-                            moves.add(new Move(new TileLocationPair(tile, loc)));
+
+                            cross = this.getCrossword(new TileLocationPair(tile, loc), o);
+
+                            if (cross.length() > 1 && tree.containsWord(cross)) {
+                                System.out.println(cross);
+                                moves.add(new Move(new TileLocationPair(tile, loc)));
+                            }
                         }
                     }
                 }
@@ -171,35 +174,6 @@ public class Board {
 
         return moves;
     }
-
-    /*
-    public ArrayList<Move> getPossibleMoves2(BoardLocation loc, Orientation o, LetterTray tray, WordTree tree) {
-        ArrayList<Move> moves = new ArrayList<>();
-        Optional<BoardLocation> next = this.getNextLocation(loc, o);
-        BoardSquare sq = this.getSquareAt(loc).get();
-
-        if (sq.hasTile()) {
-            char letter = sq.getTile().get().getLetter();
-            if (tree.keySet().contains(letter)) {
-                if (next.isPresent()) {
-
-                }
-            } else {
-                return moves;
-            }
-
-        } else {
-
-        }
-
-        if (!this.getNextLocation(loc, o).isPresent()) {
-            // Do something
-        } else {
-            // Do something
-        }
-    }
-
-     */
 
     public boolean isAnchor(BoardLocation loc) {
         if (!this.isOnBoard(loc)) {
@@ -215,7 +189,7 @@ public class Board {
         return this.isAnchor(this.locationFromSquare(sq));
     }
 
-    private BoardLocation locationFromSquare(BoardSquare sq) {
+    public BoardLocation locationFromSquare(BoardSquare sq) {
         for (int row=0; row<this.rows; row++) {
             for (int col=0; col<this.columns; col++) {
                 if (this.squares[row][col] == sq) {
@@ -305,9 +279,6 @@ public class Board {
         BoardLocation loc = start;
         Orientation o;
 
-        //System.out.println("Start: " + start);
-        //System.out.println("End: " + end);
-
         if (start.getRow() == end.getRow()) {
             o = Orientation.ACROSS;
         } else {
@@ -325,6 +296,29 @@ public class Board {
         squares.add(this.getSquareAt(end).get());
 
         return squares;
+    }
+
+    public String getCrossword(TileLocationPair p, Orientation o) {
+        String cross = "";
+
+        Orientation perp = o.getPerpendicular();
+        BoardLocation start = this.getSequenceStart(p.getLocation(), new Move(p), perp).get();
+        BoardLocation end = this.getSequenceEnd(p.getLocation(), new Move(p), perp).get();
+
+        for (BoardSquare sq: this.getSlice(start, end)) {
+            if (sq.hasTile()) {
+                cross += sq.getTile().get().getLetter();
+            } else {
+                cross += p.getTile().getLetter();
+            }
+        }
+
+        if (!start.equals(end)) {
+            System.out.println(start + " " + end);
+            System.out.println(cross);
+        }
+
+        return cross;
     }
 
     public Optional<String> wordFromMove(BoardLocation start, BoardLocation end, Move m) {
@@ -458,38 +452,41 @@ public class Board {
         return this.getSequenceStart(loc, m, o);
     }
 
-    public SquareSequence getPrimaryWord(Move m) {
-        Orientation o;
-        SquareSequence word = new SquareSequence();
+    public Word getWord(Move m, Orientation o) {
         BoardLocation start, end;
+        start = this.getSequenceStart(m.getLocations().get(0), m, m.getOrientation()).get();
+        end = this.getSequenceEnd(m.getLocations().get(0), m, m.getOrientation()).get();
 
-        if (m.size() == 0) {
-            return word;
-        }
-
-        if (!m.isSingleTile()) {
-            if (m.getOrientation().isPresent()) {
-                o = m.getOrientation().get();
-            } else {
-                o = Orientation.ACROSS;
-            }
-            start = this.getSequenceStart(m.getLocations().get(0), m, o).get();
-            end = this.getSequenceEnd(m.getLocations().get(0), m, o).get();
-
-            return this.getSlice(start, end);
-
-        } else {
-            start = m.getLocations().get(0);
-        }
-
-        return word;
+        return new Word(this.getSlice(start, end), m);
     }
 
-    public ArrayList<SquareSequence> getCrossWords(Move m) { return  new ArrayList<SquareSequence>();}
+    public Word getPrimaryWord(Move m) {
+        BoardLocation start, end;
 
-    public ArrayList<SquareSequence> getAllWords(Move m) {
-        ArrayList<SquareSequence> words = new ArrayList<>();
-        words.add(this.getPrimaryWord(m));
+        assert (m.size() > 0);
+
+        start = this.getSequenceStart(m.getLocations().get(0), m, m.getOrientation()).get();
+        end = this.getSequenceEnd(m.getLocations().get(0), m, m.getOrientation()).get();
+
+        return new Word(this.getSlice(start, end), m);
+    }
+
+    public ArrayList<Word> getCrossWords(Move m) {
+        ArrayList<Word> crosswords = new ArrayList<>();
+        Orientation o = m.getOrientation().getPerpendicular();
+
+        for (TileLocationPair p: m) {
+            crosswords.add(this.getWord(new Move(p), o));
+        }
+
+        return crosswords;
+    }
+
+    public ArrayList<Word> getAllWords(Move m) {
+        ArrayList<Word> words = new ArrayList<>();
+
+        assert m.size() != 0;
+
         words.addAll(this.getCrossWords(m));
 
         return words;
@@ -553,15 +550,29 @@ public class Board {
         return true;
     }
 
+    public int scoreAllWords(Move m, LetterScores ls, int trayLength) {
+        int score = 0;
+        ArrayList<Word> words = this.getAllWords(m);
+
+        for (Word w: words) {
+            score += this.score(w, ls);
+        }
+
+        if (m.size() == trayLength) {
+            score += 50;
+        }
+        return score;
+    }
+
+    /*
     public int score(Move m, LetterScores ls) {
-        // Needs to take into account new words created by crossing
         int score = 0;
         int wordMultiplier = 1;
         int moveIdx = 0;
 
-        SquareSequence primary = this.getPrimaryWord(m);
+        SquareSequence word = this.getPrimaryWord(m);
 
-        for (BoardSquare sq: primary) {
+        for (BoardSquare sq: word) {
             if (sq.hasTile()) {
                 score += ls.get(sq.getTile().get().getLetter());
             } else {
@@ -572,16 +583,46 @@ public class Board {
         }
 
         score *= wordMultiplier;
-        /*
-        ArrayList<Scrabble.SquareSequence> words = this.getAllWords(m);
-
-        for (Scrabble.SquareSequence w: words) {
-            score += w.score(ls);
-        }
-         */
 
         return score;
     }
+     */
+
+    public int score(Word w, LetterScores ls) {
+        int score = 0;
+        int wordMult = 1;
+        BoardSquare sq;
+
+        for (int i=0; i<w.length(); i++) {
+            sq = w.get(i, this);
+            score += ls.get(sq.getTile().get().getLetter()) * sq.getLetterMultiplier();
+            wordMult *= sq.getWordMultiplier();
+        }
+
+        return score;
+    }
+
+    public int scoreSequence(Move m, SquareSequence seq, LetterScores ls) {
+        int score = 0;
+        int wordMultiplier = 1;
+        BoardLocation loc;
+        LetterTile tile;
+
+        for (BoardSquare sq: seq) {
+            if (sq.hasTile()) {
+                score += ls.get(sq.getTile().get().getLetter());
+            } else {
+                loc = this.locationFromSquare(sq);
+                tile = m.tileByLocation(loc).get();
+                score += ls.get(tile.getLetter()) * sq.getLetterMultiplier();
+                wordMultiplier *= sq.getLetterMultiplier();
+            }
+        }
+
+        return score * wordMultiplier;
+    }
+
+
 
     private SquareSequence getMaxSquareSequence(BoardLocation loc, Orientation o, int traySize) {
         SquareSequence seq = new SquareSequence();
