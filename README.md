@@ -4,6 +4,8 @@
 
 # Known Issues
 
+1. Zero-length words are treated as valid by solver
+
 # Planned Features
 
 1. Difficulty levels for computer player based on partial knowledge of dictionary
@@ -25,6 +27,10 @@
 
 ## General
 
+- [ ] Complete ReadMe sections (above)
 - [ ] Add Javadoc comments
 - [ ] Add clarification comments where necessary
+- [ ] Edit code to meet 80-character line limit
 - [ ] Revise object diagrams
+- [ ] Remove print and assert statements from final version
+- [ ] Resolve IntelliJ warnings (low priority)
