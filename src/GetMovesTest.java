@@ -19,30 +19,22 @@ public class GetMovesTest {
         System.out.println(tr.getAllWords().size() + " words in word tree");
 
         String testWord = "TROOLIE";
-        BoardLocation testLoc = new BoardLocation(0, 6);
+        BoardLocation testLoc = new BoardLocation(0, 5);
         assert tr.contains(testWord): "Not in dictionary";
 
         LetterScores scores = new LetterScores("/Users/hank/IdeaProjects/cs351/scrabble/resources/letterscores.txt");
 
-        ArrayList<Move> moves = b.getPossibleMoves(testLoc, Orientation.DOWN, t, tr, tr);
+        ArrayList<Move> moves = b.getPossibleConnectingMoves(testLoc, Orientation.DOWN, t, tr, tr);
         //System.out.println(moves);
         System.out.println(moves.size() + " possible moves found");
 
         boolean inMoves = false;
 
-        ArrayList<Move> emptyMoves = new ArrayList<>();
-
         for (Move m: moves) {
             if (m.toString().equals(testWord)) {
                 inMoves = true;
             }
-
-            if (m.size() == 0) {
-                emptyMoves.add(m);
-            }
         }
-
-        moves.removeAll(emptyMoves);
 
         if (inMoves) {
             System.out.println(testWord + " in possible moves");
@@ -73,30 +65,34 @@ public class GetMovesTest {
             }
         }
 
-        System.out.println("Best move: " + bestMove + " at " + bestMove.getLocations().get(0));
-        System.out.println("Score: " + bestScore);
+        try {
+            System.out.println("Best move: " + bestMove + " at " + bestMove.getLocations().get(0));
+            System.out.println("Score: " + bestScore);
 
-        ArrayList<Word> allWords = b.getAllWords(bestMove);
+            ArrayList<Word> allWords = b.getAllWords(bestMove);
 
-        System.out.println("Individual word scores: ");
-        for (Word w: allWords) {
-            System.out.println(w.toString(b) + ": " + b.score(w, scores));
+            System.out.println("Individual word scores: ");
+            for (Word w: allWords) {
+                System.out.println(w.toString(b) + ": " + b.score(w, scores));
+            }
+
+            System.out.println("Word length frequencies: ");
+            HashMap<Integer, Integer> freqs = new HashMap<>();
+
+            for (int i=0; i<8; i++) {
+                freqs.put(i, 0);
+            }
+
+            int count;
+
+            for (Move m: moves) {
+                count = freqs.get(m.size());
+                freqs.put(m.size(), count+1);
+            }
+
+            System.out.println(freqs);
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("No moves found.");
         }
-
-        System.out.println("Word length frequencies: ");
-        HashMap<Integer, Integer> freqs = new HashMap<>();
-
-        for (int i=0; i<8; i++) {
-            freqs.put(i, 0);
-        }
-
-        int count;
-
-        for (Move m: moves) {
-            count = freqs.get(m.size());
-            freqs.put(m.size(), count+1);
-        }
-
-        System.out.println(freqs);
     }
 }
