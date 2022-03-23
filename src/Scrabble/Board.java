@@ -182,7 +182,7 @@ public class Board {
                             cross = this.getCrossword(new TileLocationPair(tile, loc), o);
 
                             if (cross.length() > 1 && tree.containsWord(cross)) {
-                                System.out.println(cross);
+                                //System.out.println(cross);
                                 moves.add(new Move(new TileLocationPair(tile, loc)));
                             }
                         }
@@ -343,8 +343,8 @@ public class Board {
         }
 
         if (!start.equals(end)) {
-            System.out.println(start + " " + end);
-            System.out.println(cross);
+            //System.out.println(start + " " + end);
+            //System.out.println(cross);
         }
 
         return cross;

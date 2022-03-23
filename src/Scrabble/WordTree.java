@@ -43,7 +43,7 @@ public class WordTree extends HashMap<Character, WordTree> {
     public WordTree query(String s) {
         s = s.toUpperCase();
         WordTree result = this;
-        System.out.println("Query: " + s);
+        //System.out.println("Query: " + s);
 
         while (s.length() > 0 && !result.keySet().isEmpty()) {
             result = result.getOrDefault(s.charAt(0), new WordTree());
