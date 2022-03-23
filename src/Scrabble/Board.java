@@ -96,6 +96,21 @@ public class Board {
         return square;
     }
 
+    public ArrayList<Move> getPossibleConnectingMoves(BoardLocation loc, Orientation o, LetterTray tray, WordTree tree, WordTree sub) {
+        ArrayList<Move> moves = getPossibleMoves(loc, o, tray, tree, sub);
+        ArrayList<Move> toRemove = new ArrayList<>();
+
+        for (Move m: moves) {
+            if (m.size() == 0 || !this.connects(m)) {
+                toRemove.add(m);
+            }
+        }
+
+        moves.removeAll(toRemove);
+
+        return moves;
+    }
+
     public ArrayList<Move> getPossibleMoves(BoardLocation loc, Orientation o, LetterTray tray, WordTree tree, WordTree sub) {
         ArrayList<Move> moves = new ArrayList<>();
         char c;
@@ -107,7 +122,7 @@ public class Board {
             Optional<BoardLocation> next = this.getNextLocation(loc, o);
             String cross;
 
-            if (t.isPresent()) {
+            if (t.isPresent()) { // Tile already exists in location
                 if (sub.keySet().contains(t.get().getLetter())) {
                     c = t.get().getLetter();
 
@@ -117,45 +132,29 @@ public class Board {
                         moves.add(new Move());
                     }
                 }
-            } else {
+            } else { // no tile at location
                 for (char ch : sub.keySet()) {
                     if (ch == sub.getTerminator()) {
                         moves.add(new Move());
-                    } else if (next.isPresent() && tray.hasLetter(ch)) {
+                    } else if (next.isPresent() && tray.hasLetter(ch)) { // not at edge of board
 
                         LetterTray trayCopy = new LetterTray();
                         trayCopy.addAll(tray);
                         LetterTile tile = trayCopy.getTileByLetter(ch).get();
 
-                        // Look for crossword
-                        /*
-                        start = this.getSequenceStart(loc, new Move(new TileLocationPair(tile, loc)), o.getPerpendicular()).get();
-                        end = this.getSequenceEnd(loc, new Move(new TileLocationPair(tile, loc)), o.getPerpendicular()).get()
-                         */
-
-
                         cross = this.getCrossword(new TileLocationPair(tile, loc), o);
 
                         if (cross.length() > 1) {
-                            System.out.println(cross);
-
                             if (!tree.containsWord(cross)) {
                                 continue;
                             }
                         }
 
-                        /*
-                        if (!tree.keySet().contains(cross.get())) {
-                            continue;
-                        }
+                        trayCopy.remove(tile); // prevents mutations to original tray
 
-                         */
-
-                        trayCopy.remove(tile);
-
+                        // Append partial moves (obtained recursively)
                         for (Move m : this.getPossibleMoves(next.get(), o, trayCopy, tree, sub.get(ch))) {
-                            Move newMove = new Move();
-                            newMove.add(new TileLocationPair(tile, loc));
+                            Move newMove = new Move(new TileLocationPair(tile, loc));
                             newMove.addAll(m);
                             moves.add(newMove);
                         }
@@ -178,6 +177,16 @@ public class Board {
         }
 
         return moves;
+    }
+
+    public boolean connects(Move m) {
+        for (BoardLocation loc: m.getLocations()) {
+            if (this.neighborHasTile(loc)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean isAnchor(BoardLocation loc) {
