@@ -19,7 +19,7 @@ public class GetMovesTest {
         System.out.println(tr.getAllWords().size() + " words in word tree");
 
         String testWord = "TROOLIE";
-        BoardLocation testLoc = new BoardLocation(0, 5);
+        BoardLocation testLoc = new BoardLocation(0, 6);
         assert tr.contains(testWord): "Not in dictionary";
 
         LetterScores scores = new LetterScores("/Users/hank/IdeaProjects/cs351/scrabble/resources/letterscores.txt");
@@ -95,10 +95,6 @@ public class GetMovesTest {
         for (Move m: moves) {
             count = freqs.get(m.size());
             freqs.put(m.size(), count+1);
-
-            if (m.size() == 6) {
-                System.out.println(m);
-            }
         }
 
         System.out.println(freqs);
