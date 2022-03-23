@@ -96,6 +96,21 @@ public class Board {
         return square;
     }
 
+    public ArrayList<Move> getGlobalPossibleMoves(LetterTray tray, WordTree tree) {
+        ArrayList<Move> moves = new ArrayList<>();
+        BoardLocation loc;
+
+        for (int i=0; i<this.rows; i++) {
+            for (int j=0; j<this.columns; j++) {
+                loc = new BoardLocation(i, j);
+                moves.addAll(this.getPossibleConnectingMoves(loc, Orientation.ACROSS, tray, tree, tree));
+                moves.addAll(this.getPossibleConnectingMoves(loc, Orientation.DOWN, tray, tree, tree));
+            }
+        }
+
+        return moves;
+    }
+
     public ArrayList<Move> getPossibleConnectingMoves(BoardLocation loc, Orientation o, LetterTray tray, WordTree tree, WordTree sub) {
         ArrayList<Move> moves = getPossibleMoves(loc, o, tray, tree, sub);
         ArrayList<Move> toRemove = new ArrayList<>();

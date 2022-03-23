@@ -24,7 +24,7 @@ public class GetMovesTest {
 
         LetterScores scores = new LetterScores("/Users/hank/IdeaProjects/cs351/scrabble/resources/letterscores.txt");
 
-        ArrayList<Move> moves = b.getPossibleConnectingMoves(testLoc, Orientation.DOWN, t, tr, tr);
+        ArrayList<Move> moves = b.getGlobalPossibleMoves(t, tr);
         //System.out.println(moves);
         System.out.println(moves.size() + " possible moves found");
 
