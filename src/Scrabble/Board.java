@@ -479,9 +479,13 @@ public class Board {
     public ArrayList<Word> getCrossWords(Move m) {
         ArrayList<Word> crosswords = new ArrayList<>();
         Orientation o = m.getOrientation().getPerpendicular();
+        Word w;
 
         for (TileLocationPair p: m) {
-            crosswords.add(this.getWord(new Move(p), o));
+            w = this.getWord(new Move(p), o);
+            if (w.length() > 1) {
+                crosswords.add(this.getWord(new Move(p), o));
+            }
         }
 
         return crosswords;
@@ -492,6 +496,7 @@ public class Board {
 
         assert m.size() != 0;
 
+        words.add(this.getPrimaryWord(m));
         words.addAll(this.getCrossWords(m));
 
         return words;
