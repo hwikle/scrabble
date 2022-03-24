@@ -19,6 +19,7 @@ public class Word {
     }
 
     public int length() {
+        // TODO: This might have a bug
         return this.seq.size();
     }
 

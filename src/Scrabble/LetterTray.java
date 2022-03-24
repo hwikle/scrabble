@@ -33,12 +33,22 @@ public class LetterTray extends ArrayList<LetterTile> implements Cloneable {
 
     public boolean hasBlank() {
         for (LetterTile t: this) {
-            if (t.getLetter() == ' ') {
+            if (t.isBlank()) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    public Optional<LetterTile> getBlank() {
+        for (LetterTile t: this) {
+            if (t.isBlank()) {
+                return Optional.of(t);
+            }
+        }
+
+        return Optional.empty();
     }
 
     public String toRegexRange() {

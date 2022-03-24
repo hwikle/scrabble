@@ -52,8 +52,12 @@ public class SolverTest {
         int passed = 0;
         int failed = 0;
         boolean result;
+        BoardLocation loc = new BoardLocation(2, 8);
 
-        for (int i=0; i<4; i++) {
+        result = testAtLoc(boards.get(0), trays.get(0), loc, expectedWords[0], expectedScores[0]);
+
+        /*
+        for (int i=0; i<1; i++) {
             result = test(boards.get(i), trays.get(i), expectedWords[i], expectedScores[i]);
 
             if (result) {
@@ -64,27 +68,90 @@ public class SolverTest {
         }
 
         System.out.println("Passed " + passed + "/4 tests " + "(" + (int)(100*passed/4.0) + "%)");
+         */
     }
 
     public static boolean test(Board b, LetterTray tray, String expectedWord, int expectedScore) {
         expectedWord = expectedWord.toUpperCase();
         ArrayList<Move> moves = b.getGlobalPossibleMoves(tray, dictionary);
+        System.out.println(b);
         System.out.println("Found " + moves.size() + " moves");
+
+        for (Move m: moves) {
+            if (m.toString().equals(expectedWord)) {
+                System.out.println(expectedWord + " in moves");
+                System.out.println(m.getLocations().get(0) + " " + m.getOrientation());
+            }
+        }
+
         Move bestMove = new Move();
         int bestScore = 0;
 
-        int score;
+        MoveScore ms;
+        MoveScore bestMS = new MoveScore();
 
         for (Move m: moves) {
-            score = b.scoreAllWords(m, scores, 7);
-            if (score > bestScore) {
-                bestScore = score;
+            ms = b.scoreAllWords(m, scores, 7);
+            if (ms.getScore() > bestScore) {
+                bestScore = ms.getScore();
+                bestMS = ms;
                 bestMove = m;
             }
         }
 
         System.out.println("Expected: " + expectedWord + " (" + expectedScore +")");
         System.out.println("Actual: " + b.getPrimaryWord(bestMove).toString(b) + " (" + bestScore +")");
+
+        assert dictionary.containsWord(b.getPrimaryWord(bestMove).toString(b));
+
+        System.out.println(bestMS);
+        System.out.println(b.locationFromSquare(b.getPrimaryWord(bestMove).getBoardSquares().get(0)));
+
+        if (bestScore == expectedScore && expectedWord.equals(b.getPrimaryWord(bestMove).toString(b))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean testAtLoc(Board b, LetterTray tray, BoardLocation loc, String expectedWord, int expectedScore) {
+        expectedWord = expectedWord.toUpperCase();
+        ArrayList<Move> moves = b.getPossibleMoves(loc, Orientation.ACROSS, tray, dictionary, dictionary);
+        moves.addAll(b.getPossibleMoves(loc, Orientation.DOWN, tray, dictionary, dictionary));
+
+        System.out.println(b);
+        System.out.println("Found " + moves.size() + " moves");
+
+        for (Move m: moves) {
+            if (m.toString().equals(expectedWord)) {
+                System.out.println(expectedWord + " in moves");
+                System.out.println(m.getLocations().get(0) + " " + m.getOrientation());
+            }
+        }
+
+        Move bestMove = new Move();
+        int bestScore = 0;
+
+        MoveScore ms;
+        MoveScore bestMS = new MoveScore();
+
+        for (Move m: moves) {
+            ms = b.scoreAllWords(m, scores, 7);
+            if (ms.getScore() > bestScore) {
+                bestScore = ms.getScore();
+                bestMS = ms;
+                bestMove = m;
+            }
+        }
+
+        System.out.println("Expected: " + expectedWord + " (" + expectedScore +")");
+        System.out.println("Actual: " + b.getPrimaryWord(bestMove).toString(b) + " (" + bestScore +")");
+
+
+        assert dictionary.containsWord(b.getPrimaryWord(bestMove).toString(b));
+
+        System.out.println(bestMS);
+        System.out.println(bestMove.getLocations().get(0) + " " + bestMove.getOrientation());
 
         if (bestScore == expectedScore && expectedWord.equals(b.getPrimaryWord(bestMove).toString(b))) {
             return true;

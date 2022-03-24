@@ -3,6 +3,8 @@ package Scrabble;
 import java.util.ArrayList;
 
 public class MoveScore extends ArrayList<WordScore> {
+    private int bonus = 0;
+
     public int getScore() {
         int score = 0;
 
@@ -10,7 +12,11 @@ public class MoveScore extends ArrayList<WordScore> {
             score += ws.getScore();
         }
 
-        return score;
+        return score + bonus;
+    }
+
+    public void setBonus(int bonus) {
+        this.bonus = bonus;
     }
 
     public String toString() {
@@ -18,6 +24,10 @@ public class MoveScore extends ArrayList<WordScore> {
 
         for (WordScore ws: this) {
             s += "\n\t" + ws.toString();
+        }
+
+        if (bonus > 0) {
+            s += "\n\tBONUS: " + this.bonus;
         }
 
         return s;

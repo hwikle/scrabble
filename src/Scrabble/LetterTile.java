@@ -1,16 +1,22 @@
 package Scrabble;
 
-public class LetterTile {
+public class LetterTile implements Cloneable {
     private char letter;
-    private int value;
     private boolean isBlank = false;
 
     public LetterTile(char letter) {
         this.letter = Character.toUpperCase(letter);
+        if (this.letter == '*') {
+            this.setBlank();
+        }
     }
 
     public void setBlank() {
         this.isBlank = true;
+    }
+
+    public void setLetter(char l) {
+        this.letter = l;
     }
 
     public char getLetter() {

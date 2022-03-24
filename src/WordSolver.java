@@ -22,6 +22,7 @@ public class WordSolver {
         ArrayList<String> words;
 
         int score;
+        MoveScore ms;
         int bestScore = 0;
         Move bestMove = new Move();
 
@@ -30,10 +31,10 @@ public class WordSolver {
                 loc = new BoardLocation(i, j);
 
                 for (Move m: b.getPossibleMoves(loc, o, t, tr, tr)) {
-                    score = b.scoreAllWords(m, scores, 7);
+                    ms = b.scoreAllWords(m, scores, 7);
 
-                    if (score > bestScore) {
-                        bestScore = score;
+                    if (ms.getScore() > bestScore) {
+                        bestScore = ms.getScore();
                         bestMove = m;
                     }
                 }
