@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class WordSolver {
@@ -22,19 +24,26 @@ public class WordSolver {
         Board b;
         Scanner s;
         LetterTray tray;
+        Optional<String> l;
 
         try {
             s = new Scanner(new File(boardCfgFile));
-            b = new Board(Integer.valueOf(s.nextLine()));
-            //System.out.println("Board size: " + b.getRows());
-            b.populateFromScanner(s);
-            //System.out.println(b);
+            while (s.hasNextLine()) {
+                l = getNextNonemptyLine(s);
 
-            tray = new LetterTray(s.nextLine());
+                if (l.isPresent()) {
+                    b = new Board(Integer.valueOf(l.get()));
+                    b.populateFromScanner(s);
 
-            solve(b, tray, dict, scores);
+                    l = getNextNonemptyLine(s);
 
-        } catch (FileNotFoundException e) {
+                    if (l.isPresent()) {
+                        tray = new LetterTray(l.get());
+                        solve(b, tray, dict, scores);
+                    }
+                }
+            }
+        } catch(FileNotFoundException e) {
             System.out.println("File not found");
         }
     }
@@ -66,5 +75,18 @@ public class WordSolver {
         b.play(bestMove);
         System.out.println("Solution Board:");
         System.out.println(b);
+    }
+
+    private static Optional<String> getNextNonemptyLine(Scanner s) {
+        String l;
+        while (s.hasNextLine()) {
+            l = s.nextLine();
+
+            if (!l.strip().equals("")) {
+                return Optional.of(l);
+            }
+        }
+
+        return Optional.empty();
     }
 }
