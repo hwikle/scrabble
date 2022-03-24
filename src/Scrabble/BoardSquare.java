@@ -50,9 +50,9 @@ public class BoardSquare implements Cloneable {
 
     public String toString() {
         if (this.tile.isPresent()) {
-            return " " + Character.toString(this.tile.get().getLetter());
+            return " " + this.tile.get();
         } else {
-            String s = String.valueOf(wordMultiplier) + String.valueOf(letterMultiplier);
+            String s = String.valueOf(wordMultiplier) + letterMultiplier;
             s = s.replaceAll("1", ".");
 
             return s;

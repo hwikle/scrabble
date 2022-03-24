@@ -43,11 +43,22 @@ public class Word {
         BoardLocation loc;
 
         for (BoardSquare sq: this.seq) {
+            LetterTile t;
             if (sq.hasTile()) {
-                s += sq.getTile().get().getLetter();
+                t = sq.getTile().get();
+                if (t.isBlank()) {
+                    s += t.getLetter();
+                } else {
+                    s += Character.toLowerCase(t.getLetter());
+                }
             } else {
                 loc = b.locationFromSquare(sq);
-                s += this.move.tileByLocation(loc).get().getLetter();
+                t = this.move.tileByLocation(loc).get();
+                if (t.isBlank()) {
+                    s += t.getLetter();
+                } else {
+                    s += Character.toLowerCase(t.getLetter());
+                }
             }
         }
         return s;

@@ -1,5 +1,7 @@
 package Scrabble;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 public class Board {
@@ -41,6 +43,49 @@ public class Board {
 
         for (int i=0; i<this.rows; i++) {
             tileStrings = new ArrayList<String>(Arrays.asList(rows[i].split(" ")));
+
+            ArrayList<String> toRemove = new ArrayList<>();
+
+            // Remove empty strings
+            for (String ts: tileStrings) {
+                if (ts.equals("")) {
+                    toRemove.add(ts);
+                }
+            }
+
+            tileStrings.removeAll(toRemove);
+
+            for (int j=0; j<this.columns; j++) {
+                tileStr = tileStrings.get(j);
+                sq = this.getSquareAt(new BoardLocation(i, j)).get();
+
+                if (Character.isLetter(tileStr.charAt(0))) {
+                    newTile = new LetterTile(tileStr.charAt(0));
+
+                    if (Character.isUpperCase(tileStr.charAt(0))) {
+                        newTile.setBlank();
+                    }
+                    sq.addTile(newTile);
+                } else {
+                    if (Character.isDigit(tileStr.charAt(0))) {
+                        //System.out.println(Character.digit(tileStr.charAt(0), 10));
+                        sq.setWordMultiplier(Character.digit(tileStr.charAt(0), 10));
+                    } else if (Character.isDigit(tileStr.charAt(1))) {
+                        sq.setLetterMultiplier(Character.digit(tileStr.charAt(1), 10));
+                    }
+                }
+            }
+        }
+    }
+
+    public void populateFromScanner(Scanner s) {
+        ArrayList<String> tileStrings;
+        String tileStr;
+        BoardSquare sq;
+        LetterTile newTile;
+
+        for (int i=0; i<this.rows; i++) {
+            tileStrings = new ArrayList<String>(Arrays.asList(s.nextLine().split(" ")));
 
             ArrayList<String> toRemove = new ArrayList<>();
 
@@ -766,7 +811,9 @@ public class Board {
                     s += " ";
                 }
             }
-            s += "\n";
+            if (i != this.rows-1) {
+                s += "\n";
+            }
         }
 
         return s;
