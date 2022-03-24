@@ -7,12 +7,16 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class Move extends ArrayList<TileLocationPair> {
-    private Orientation o;
-
     public Move() {}
 
     public Move(TileLocationPair pair) {
         this.add(pair);
+    }
+
+    public Move(ArrayList<LetterTile> tiles, ArrayList<BoardLocation> locs) {
+        for (int i=0; i<tiles.size(); i++) {
+            this.add(new TileLocationPair(tiles.get(i), locs.get(i)));
+        }
     }
 
     public ArrayList<LetterTile> getTiles() {
@@ -45,10 +49,6 @@ public class Move extends ArrayList<TileLocationPair> {
         }
 
         return tile;
-    }
-
-    public boolean isSingleTile() {
-        return (this.size() == 1);
     }
 
     public boolean isLinear() {

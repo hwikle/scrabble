@@ -46,7 +46,8 @@ public class GetMovesTest {
         //System.out.println(b.getSquareAt(new BoardLocation(1, 6)).get().getWordMultiplier());
         System.out.println(moves.size() + " moves found");
 
-        int score = 0;
+        //int score = 0;
+        MoveScore ms;
         int bestScore = 0;
         Move bestMove = new Move();
         int maxLength = 0;
@@ -57,10 +58,10 @@ public class GetMovesTest {
                 maxLength = m.size();
                 longest = m;
             }
-            score = b.scoreAllWords(m, scores, 7);
+            ms = b.scoreAllWords(m, scores, 7);
 
-            if (score > bestScore) {
-                bestScore = score;
+            if (ms.getScore() > bestScore) {
+                bestScore = ms.getScore();
                 bestMove = m;
             }
         }

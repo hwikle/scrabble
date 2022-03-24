@@ -42,6 +42,7 @@ public class Dictionary {
         return true;
     }
 
+    /*
     public ArrayList<String> Query(SquareSequence seq, LetterTray tray) {
         ArrayList<String> words = new ArrayList<>();
 
@@ -60,5 +61,7 @@ public class Dictionary {
 
         return words;
     }
+
+     */
 
 }

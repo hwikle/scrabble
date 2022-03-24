@@ -1,5 +1,7 @@
 package Scrabble;
 
+import org.w3c.dom.ls.LSOutput;
+
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -33,7 +35,7 @@ public class LetterTray extends ArrayList<LetterTile> implements Cloneable {
 
     public boolean hasBlank() {
         for (LetterTile t: this) {
-            if (t.getLetter() == ' ') {
+            if (t.isBlank()) {
                 return true;
             }
         }
@@ -41,16 +43,24 @@ public class LetterTray extends ArrayList<LetterTile> implements Cloneable {
         return false;
     }
 
-    public String toRegexRange() {
-        String s = "";
-
+    public Optional<LetterTile> getBlank() {
         for (LetterTile t: this) {
-            if (t.getLetter() != ' ') {
-                s += t.getLetter();
+            if (t.isBlank()) {
+                return Optional.of(t);
             }
         }
 
-        return "[" + s + "]";
+        return Optional.empty();
+    }
+
+    @Override
+    public String toString() {
+        String s = "";
+
+        for (LetterTile t: this) {
+            s += t.toString() + " ";
+        }
+        return s;
     }
 
     public LetterTray clone() {
