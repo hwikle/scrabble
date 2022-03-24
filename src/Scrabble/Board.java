@@ -811,7 +811,9 @@ public class Board {
                     s += " ";
                 }
             }
-            s += "\n";
+            if (i != this.rows-1) {
+                s += "\n";
+            }
         }
 
         return s;

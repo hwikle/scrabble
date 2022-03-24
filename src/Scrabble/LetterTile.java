@@ -28,6 +28,10 @@ public class LetterTile implements Cloneable {
     }
 
     public String toString() {
-        return String.valueOf(this.letter);
+        if (this.isBlank()) {
+            return String.valueOf(this.letter);
+        } else {
+            return String.valueOf(Character.toLowerCase(this.letter));
+        }
     }
 }

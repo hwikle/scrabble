@@ -58,13 +58,12 @@ public class LetterTray extends ArrayList<LetterTile> implements Cloneable {
         String s = "";
 
         for (LetterTile t: this) {
-            s += t.toString() + " ";
+            if (t.isBlank()) {
+                s += t.getLetter();
+            } else {
+                s += Character.toLowerCase(t.getLetter());
+            }
         }
         return s;
-    }
-
-    public LetterTray clone() {
-        // TODO: Implement
-        return this;
     }
 }
