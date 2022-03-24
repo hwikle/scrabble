@@ -54,10 +54,32 @@ public class SolverTest {
         boolean result;
         BoardLocation loc = new BoardLocation(2, 8);
 
-        result = testAtLoc(boards.get(0), trays.get(0), loc, expectedWords[0], expectedScores[0]);
+        //result = testAtLoc(boards.get(0), trays.get(0), loc, expectedWords[0], expectedScores[0]);
+
+        //LetterTray tray = new LetterTray("d");
+        //assert tray.hasBlank();
+        //WordTree sub = dictionary.query("lemone");
+        //ArrayList<String> subwords = sub.getAllWords();
 
         /*
-        for (int i=0; i<1; i++) {
+        for (String w: subwords) {
+            System.out.println(w);
+        }
+         */
+
+        /*
+        ArrayList<Move> submoves = boards.get(0).getPossibleMoves(new BoardLocation(2, 14), Orientation.ACROSS, tray, sub, sub);
+
+        System.out.println(submoves.size());
+
+        for (Move m: submoves) {
+            System.out.println(m);
+        }
+
+         */
+
+        for (int i=0; i<4; i++) {
+
             result = test(boards.get(i), trays.get(i), expectedWords[i], expectedScores[i]);
 
             if (result) {
@@ -68,7 +90,6 @@ public class SolverTest {
         }
 
         System.out.println("Passed " + passed + "/4 tests " + "(" + (int)(100*passed/4.0) + "%)");
-         */
     }
 
     public static boolean test(Board b, LetterTray tray, String expectedWord, int expectedScore) {
@@ -77,8 +98,12 @@ public class SolverTest {
         System.out.println(b);
         System.out.println("Found " + moves.size() + " moves");
 
+        Word w;
+
         for (Move m: moves) {
-            if (m.toString().equals(expectedWord)) {
+            w = b.getWord(m, m.getOrientation());
+            //System.out.println(w.toString(b));
+            if (w.toString().equals(expectedWord)) {
                 System.out.println(expectedWord + " in moves");
                 System.out.println(m.getLocations().get(0) + " " + m.getOrientation());
             }
@@ -105,7 +130,7 @@ public class SolverTest {
         assert dictionary.containsWord(b.getPrimaryWord(bestMove).toString(b));
 
         System.out.println(bestMS);
-        System.out.println(b.locationFromSquare(b.getPrimaryWord(bestMove).getBoardSquares().get(0)));
+        System.out.println(b.getWordStart(b.getPrimaryWord(bestMove)) + ", " + b.getWordEnd(b.getPrimaryWord(bestMove)));
 
         if (bestScore == expectedScore && expectedWord.equals(b.getPrimaryWord(bestMove).toString(b))) {
             return true;
@@ -123,6 +148,11 @@ public class SolverTest {
         System.out.println("Found " + moves.size() + " moves");
 
         for (Move m: moves) {
+            if (m.size() == 0) {
+                continue;
+            }
+            Word w = b.getWord(m, m.getOrientation());
+            System.out.println(w.toString(b));
             if (m.toString().equals(expectedWord)) {
                 System.out.println(expectedWord + " in moves");
                 System.out.println(m.getLocations().get(0) + " " + m.getOrientation());

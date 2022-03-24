@@ -61,63 +61,6 @@ public class SquareSequence extends ArrayList<BoardSquare> {
         return score * wordMultiplier;
     }
 
-    public String toRegex() {
-        String s = "";
-        int repeatedCharacters = 0;
-
-        for (BoardSquare sq: this) {
-            if (!sq.hasTile()) {
-                repeatedCharacters++;
-            } else {
-                if (repeatedCharacters >= 1) {
-                    s += ".";
-                }
-                if (repeatedCharacters > 1) {
-                    s += "{" + repeatedCharacters + "}";
-                }
-
-                s += sq.getTile().get().getLetter();
-            }
-        }
-
-
-        return "^" + s + "$";
-     }
-
-    public String toRegex(LetterTray tray) {
-        String s = "";
-        int repeatedChars = 0;
-
-        for (BoardSquare sq: this) {
-            if (!sq.hasTile()) {
-                repeatedChars++;
-            } else {
-                if (repeatedChars >= 1) {
-                    if (tray.hasBlank()) {
-                        s += "[a-z]";
-                    } else {
-                        s += tray.toRegexRange();
-                    }
-                }
-                if (repeatedChars > 1) {
-                    s += "{" + repeatedChars + "}";
-                }
-
-                s += sq.getTile().get().getLetter();
-                repeatedChars = 0;
-            }
-        }
-
-        if (repeatedChars >= 1) {
-            s += tray.toRegexRange();
-        }
-        if (repeatedChars > 1) {
-            s += "{" + repeatedChars + "}";
-        }
-
-        return "^" + s + "$";
-    }
-
     public String toVariableLengthRegex(Board b, LetterTray tray) {
         String s = "";
         BoardSquare sq;

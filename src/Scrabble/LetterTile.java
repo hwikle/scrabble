@@ -26,4 +26,8 @@ public class LetterTile implements Cloneable {
     public boolean isBlank() {
         return this.isBlank;
     }
+
+    public String toString() {
+        return String.valueOf(this.letter);
+    }
 }

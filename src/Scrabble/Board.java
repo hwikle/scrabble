@@ -132,7 +132,10 @@ public class Board {
 
         assert this.isOnBoard(loc);
 
-        loc = this.getSequenceStart(loc, o);
+        // This is probably causing problems
+        if (tree == sub) {
+            loc = this.getSequenceStart(loc, o);
+        }
 
         if (tray.size() >= 0) {
             Optional<LetterTile> t = this.getTileAt(loc);
@@ -144,13 +147,17 @@ public class Board {
                     c = t.get().getLetter();
 
                     if (next.isPresent()) {
-                        moves.addAll(this.getPossibleMoves(next.get(), o, tray, tree, sub.get(c)));
+                        //System.out.println("Descending tree with letter: " + c + " at " + next.get());
+                        ArrayList<Move> submoves = this.getPossibleMoves(next.get(), o, tray, tree, sub.get(c));
+                        //System.out.println(sub.get(c).getAllWords().size() + " subwords in sub");
+                        //System.out.println(submoves.size() + " submoves found");
+                        moves.addAll(submoves);
                     } else if (tree.get(c).keySet().contains(sub.getTerminator())) {
                         moves.add(new Move());
                     }
                 }
             } else { // no tile at location
-                if (next.isPresent() && tray.hasBlank()) {
+                if (next.isPresent() && tray.hasBlank()) { // Incorrectly excludes edge tiles
                     LetterTile blank = tray.getBlank().get();
                     LetterTray blankless = new LetterTray();
                     blankless.addAll(tray);
@@ -158,10 +165,14 @@ public class Board {
 
                     for (char ch: sub.keySet()) {
                         if (ch != sub.getTerminator()) {
-                            for (Move m : this.getPossibleMoves(next.get(), o, blankless, tree, sub.get(ch))) {
-                                blank = new LetterTile('*');
+                            //System.out.println("Descending tree with letter: " + ch + " at " + next.get());
+                            ArrayList<Move> submoves = this.getPossibleMoves(next.get(), o, blankless, tree, sub.get(ch));
+                            //System.out.println(sub.get(ch).getAllWords().size() + " subwords in sub");
+                            //System.out.println(blankless);
+                            //System.out.println(submoves.size() + " submoves found");
+                            for (Move m : submoves) {
+                                blank = new LetterTile(ch);
                                 blank.setBlank();
-                                blank.setLetter(ch);
 
                                 cross = this.getCrossword(new TileLocationPair(blank, loc), o);
 
@@ -181,7 +192,13 @@ public class Board {
                 for (char ch : sub.keySet()) {
                     if (ch == sub.getTerminator()) {
                         moves.add(new Move());
-                    } else if (next.isPresent() && tray.hasLetter(ch)) { // not at edge of board
+                    } else if (tray.hasLetter(ch)) { // Incorrectly excludes edge squares
+
+                        // What to do if at edge?
+                        if (!next.isPresent() && sub.get(ch).keySet().contains(sub.getTerminator())) {
+                            Move newMove = new Move(new TileLocationPair(tray.getTileByLetter(ch).get(), loc));
+                            moves.add(newMove);
+                        }
 
                         LetterTray trayCopy = new LetterTray();
                         trayCopy.addAll(tray);
@@ -197,11 +214,18 @@ public class Board {
 
                         trayCopy.remove(tile); // prevents mutations to original tray
 
-                        // Append partial moves (obtained recursively)
-                        for (Move m : this.getPossibleMoves(next.get(), o, trayCopy, tree, sub.get(ch))) {
-                            Move newMove = new Move(new TileLocationPair(tile, loc));
-                            newMove.addAll(m);
-                            moves.add(newMove);
+                        if (next.isPresent()) {
+                            // Append partial moves (obtained recursively)
+                            //System.out.println("Descending tree with letter: " + ch + " at " + next.get());
+                            ArrayList<Move> submoves = this.getPossibleMoves(next.get(), o, trayCopy, tree, sub.get(ch));
+                            //System.out.println(sub.get(ch).getAllWords().size() + " subwords in sub");
+                            //System.out.println(submoves.size() + " submoves found");
+
+                            for (Move m : submoves) {
+                                Move newMove = new Move(new TileLocationPair(tile, loc));
+                                newMove.addAll(m);
+                                moves.add(newMove);
+                            }
                         }
                     } else if (tray.hasLetter(ch)) {
                         if (sub.get(ch).keySet().contains(sub.getTerminator())) {
@@ -526,7 +550,7 @@ public class Board {
     public Word getWord(Move m, Orientation o) {
         BoardLocation start, end;
         start = this.getSequenceStart(m.getLocations().get(0), m, o).get();
-        end = this.getSequenceEnd(m.getLocations().get(m.getLocations().size()-1), m, o).get();
+        end = this.getSequenceEnd(m.getLocations().get(m.getLocations().size() - 1), m, o).get();
 
         return new Word(this.getSlice(start, end), m);
     }
@@ -569,6 +593,15 @@ public class Board {
         words.addAll(this.getCrossWords(m));
 
         return words;
+    }
+
+    public BoardLocation getWordStart(Word w) {
+        return this.locationFromSquare(w.getBoardSquares().get(0));
+    }
+
+    public BoardLocation getWordEnd(Word w) {
+        BoardSquare lastSquare = w.getBoardSquares().get(w.getBoardSquares().size()-1);
+        return  this.locationFromSquare(lastSquare);
     }
 
     public boolean play(Move m) {
