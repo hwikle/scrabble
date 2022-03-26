@@ -632,14 +632,17 @@ public class Board {
     }
 
     public ArrayList<Word> getAllWords(Move m) {
-        // TODO: Fix this!!!
         ArrayList<Word> words = new ArrayList<>();
 
-        try {
-            words.add(this.getPrimaryWord(m));
-        } catch (AssertionError e) {}
+        Word primaryWord = this.getPrimaryWord(m);
 
-        words.addAll(this.getCrossWords(m));
+        if (primaryWord.length() > 1) {
+            words.add(this.getPrimaryWord(m));
+        }
+
+        for (Word w: this.getCrossWords(m)) {
+            words.add(w);
+        }
 
         return words;
     }
