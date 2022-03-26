@@ -204,7 +204,7 @@ public class Board {
             } else { // no tile at location
                 if (next.isPresent() && tray.hasBlank()) { // Incorrectly excludes edge tiles
                     LetterTile blank = tray.getBlank().get();
-                    LetterTray blankless = new LetterTray();
+                    LetterTray blankless = new LetterTray(tray.getCapacity());
                     blankless.addAll(tray);
                     blankless.remove(blank);
 
@@ -245,7 +245,7 @@ public class Board {
                             moves.add(newMove);
                         }
 
-                        LetterTray trayCopy = new LetterTray();
+                        LetterTray trayCopy = new LetterTray(tray.getCapacity());
                         trayCopy.addAll(tray);
                         LetterTile tile = trayCopy.getTileByLetter(ch).get();
 
@@ -274,7 +274,7 @@ public class Board {
                         }
                     } else if (tray.hasLetter(ch)) {
                         if (sub.get(ch).keySet().contains(sub.getTerminator())) {
-                            LetterTray trayCopy = new LetterTray();
+                            LetterTray trayCopy = new LetterTray(tray.getCapacity());
                             trayCopy.addAll(tray);
                             LetterTile tile = trayCopy.getTileByLetter(ch).get();
 
