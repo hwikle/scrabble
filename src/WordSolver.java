@@ -21,6 +21,7 @@ public class WordSolver {
         dict.populateFromFile(dictFile);
         LetterScores scores = new LetterScores("/Users/hank/IdeaProjects/cs351/scrabble/resources/letterscores.txt");
 
+        WordScorer scorer = new WordScorer("resources/scrabble_tiles.txt");
         Board b;
         Scanner s;
         LetterTray tray;
@@ -39,7 +40,7 @@ public class WordSolver {
 
                     if (l.isPresent()) {
                         tray = new LetterTray(7, l.get());
-                        solve(b, tray, dict, scores);
+                        solve(b, tray, dict, scorer);
                     }
                 }
             }
@@ -48,31 +49,19 @@ public class WordSolver {
         }
     }
 
-    private static void solve(Board b, LetterTray tray, WordTree dict, LetterScores ls) {
+    private static void solve(Board b, LetterTray tray, WordTree dict, WordScorer ws) {
         ArrayList<Move> moves = b.getGlobalPossibleMoves(tray, dict);
 
         System.out.println("Input Board:");
         System.out.println(b);
         System.out.println("Tray:" + tray);
 
-        Move bestMove = new Move();
-        int bestScore = 0;
+        Move best = ws.getBestMove(b, moves, tray.getCapacity());
+        int bestScore = ws.scoreMove(b, best, tray.getCapacity()).getScore();
 
-        MoveScore ms;
-        MoveScore bestMS = new MoveScore();
+        System.out.println("Solution " + b.getWord(best, best.getOrientation()).toString(b) + " has " + bestScore + " points ");
 
-        for (Move m: moves) {
-            ms = b.scoreAllWords(m, ls, 7);
-            if (ms.getScore() > bestScore) {
-                bestScore = ms.getScore();
-                bestMS = ms;
-                bestMove = m;
-            }
-        }
-
-        System.out.println("Solution " + b.getWord(bestMove, bestMove.getOrientation()).toString(b) + " has " + bestScore + " points ");
-
-        b.play(bestMove);
+        b.play(best);
         System.out.println("Solution Board:");
         System.out.println(b);
     }

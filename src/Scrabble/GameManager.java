@@ -8,11 +8,12 @@ public class GameManager {
     private TileBag bag;
     private String tileFpath = "resources/scrabble_tiles.txt";
     private WordTree dict = new WordTree();
-    private LetterScores ls;
+    private WordScorer scorer;
     private boolean prevCouldPlay;
 
-    public GameManager(Board b) {
+    public GameManager(Board b, WordScorer ws) {
         this.board = b;
+        this.scorer = ws;
         this.players = new PlayerList();
         this.prevCouldPlay = true;
     }
@@ -27,7 +28,7 @@ public class GameManager {
 
     public void setUp() {
         this.bag = new TileBag(tileFpath);
-        this.ls = new LetterScores(tileFpath);
+        //this.scorer = new WordScorer(tileFpath);
         this.bag.shuffle();
         System.out.println("Bag has " + this.bag.size() + " tiles");
 
@@ -48,7 +49,7 @@ public class GameManager {
         MoveScore ms;
 
         if (m.isPresent()) {
-            ms = board.scoreAllWords(m.get(), this.ls, p.tray.getCapacity());
+            ms = scorer.scoreMove(this.board, m.get(), p.getTray().getCapacity());
             System.out.println(ms);
 
             for (WordScore ws: ms) {

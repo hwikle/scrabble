@@ -10,13 +10,15 @@ import java.util.Random;
  */
 public class ComputerPlayer extends Player {
     private WordTree dict;
+    private WordScorer scorer;
 
     public ComputerPlayer() {
         super();
     }
 
-    public ComputerPlayer(LetterTray t) {
+    public ComputerPlayer(LetterTray t, WordScorer scorer) {
         super(t);
+        this.scorer = scorer;
     }
 
     public ComputerPlayer(String name, LetterTray t) {
@@ -29,13 +31,12 @@ public class ComputerPlayer extends Player {
 
     public Optional<Move> getMove(Board b) {
         ArrayList<Move> moves = b.getGlobalPossibleMoves(this.tray, this.dict);
-        Random rand = new Random();
 
-        if (moves.size() > 0) {
-            return Optional.of(moves.get(rand.nextInt(moves.size())));
-        } else {
+        if (moves.isEmpty()) {
             return Optional.empty();
         }
+
+        return Optional.of(this.scorer.getBestMove(b, moves, this.tray.getCapacity()));
     }
 
 

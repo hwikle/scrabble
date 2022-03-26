@@ -582,38 +582,6 @@ public class Board {
         return true;
     }
 
-    public MoveScore scoreAllWords(Move m, LetterScores ls, int trayLength) {
-        int score = 0;
-        ArrayList<Word> words = this.getAllWords(m);
-        MoveScore ms = new MoveScore();
-
-        for (Word w: words) {
-            score = this.score(w, ls);
-            ms.add(new WordScore(w.toString(this), score));
-        }
-
-        if (m.size() == trayLength) {
-            ms.setBonus(50);
-        }
-        return ms;
-    }
-
-    public int score(Word w, LetterScores ls) {
-        int score = 0;
-        int wordMult = 1;
-        BoardSquare sq;
-
-        for (int i=0; i<w.length(); i++) {
-            sq = w.get(i, this);
-            if (!sq.getTile().get().isBlank()) {
-                score += ls.get(sq.getTile().get().getLetter()) * sq.getLetterMultiplier();
-            }
-            wordMult *= sq.getWordMultiplier();
-        }
-
-        return score * wordMult;
-    }
-
     public String toString(boolean showMultipliers) {
         if (showMultipliers) {
             return this.toString();

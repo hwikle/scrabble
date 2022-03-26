@@ -8,7 +8,9 @@ public class TestScrabble {
     public static void main(String[] args) {
         Board b = new Board(15);
         WordTree dict = new WordTree();
+        WordScorer scorer = new WordScorer("resources/scrabble_tiles.txt");
         dict.populateFromFile("resources/sowpods.txt");
+
         System.out.println("Made dictionary");
 
         File boardCfg = new File("resources/scrabble_board.txt");
@@ -24,13 +26,13 @@ public class TestScrabble {
         }
 
 
-        GameManager game = new GameManager(b);
+        GameManager game = new GameManager(b, scorer);
         game.setDictionary(dict);
 
         ComputerPlayer cp;
 
         for (int i=0; i<2; i++) {
-            cp = new ComputerPlayer(new LetterTray(7));
+            cp = new ComputerPlayer(new LetterTray(7), scorer);
             cp.setDictionary(dict);
             game.addPlayer(cp);
         }
