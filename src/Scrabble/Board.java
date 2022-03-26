@@ -174,9 +174,8 @@ public class Board {
         ArrayList<Move> moves = new ArrayList<>();
         char c;
 
-        assert this.isOnBoard(loc);
+        //assert this.isOnBoard(loc);
 
-        // This is probably causing problems
         if (tree == sub) {
             loc = this.getSequenceStart(loc, o);
         }
@@ -236,12 +235,21 @@ public class Board {
                 for (char ch : sub.keySet()) {
                     if (ch == sub.getTerminator()) {
                         moves.add(new Move());
-                    } else if (tray.hasLetter(ch)) { // Incorrectly excludes edge squares
+                    } else if (tray.hasLetter(ch)) {
 
                         // What to do if at edge?
                         if (!next.isPresent() && sub.get(ch).keySet().contains(sub.getTerminator())) {
                             Move newMove = new Move(new TileLocationPair(tray.getTileByLetter(ch).get(), loc));
-                            moves.add(newMove);
+
+                            LetterTile tile = tray.getTileByLetter(ch).get();
+
+                            cross = this.getCrossword(new TileLocationPair(tile, loc), o);
+
+                            if (cross.length() > 1) {
+                                if (tree.containsWord(cross)) {
+                                    moves.add(newMove);
+                                }
+                            }
                         }
 
                         LetterTray trayCopy = new LetterTray(tray.getCapacity());
