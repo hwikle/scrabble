@@ -38,7 +38,7 @@ public class WordSolver {
                     l = getNextNonemptyLine(s);
 
                     if (l.isPresent()) {
-                        tray = new LetterTray(l.get());
+                        tray = new LetterTray(7, l.get());
                         solve(b, tray, dict, scores);
                     }
                 }

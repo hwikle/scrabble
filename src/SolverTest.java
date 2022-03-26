@@ -39,7 +39,7 @@ public class SolverTest {
                 b.populateFromString(boardString);
 
                 boards.add(b);
-                trays.add(new LetterTray(freader.nextLine()));
+                trays.add(new LetterTray(7, freader.nextLine()));
             }
 
         } catch (FileNotFoundException e) {

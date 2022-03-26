@@ -19,13 +19,11 @@ public class LetterScores extends HashMap<Character,Integer> {
             s = new Scanner(System.in);
         }
 
-        // TODO: Rewrite for json file
-
-        String[] pair;
+        String[] l;
 
         while (s.hasNextLine()) {
-            pair = s.nextLine().split(" ");
-            this.put(pair[0].toUpperCase().charAt(0), Integer.valueOf(pair[1]));
+            l = s.nextLine().split(" ");
+            this.put(l[0].toUpperCase().charAt(0), Integer.valueOf(l[1]));
         }
     }
 

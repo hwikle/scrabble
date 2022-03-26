@@ -7,7 +7,10 @@ import java.util.Optional;
 
 public class LetterTray extends ArrayList<LetterTile> implements Cloneable {
     private int capacity;
-    public LetterTray(int capacity) {}
+
+    public LetterTray(int capacity) {
+        this.capacity = capacity;
+    }
 
     public LetterTray(int capacity, String letters) {
 

@@ -12,11 +12,15 @@ import java.util.Optional;
  *
  * @author Hank Wikle
  */
-abstract class Player {
+public abstract class Player {
     protected String name;
     protected LetterTray tray;
     protected boolean canPlay;
-    protected int playerNumber = 1;
+    protected static int playerNumber = 1;
+
+    public Player() {
+        this(new LetterTray(7));
+    }
 
     public Player(String name, LetterTray t) {
         this.name = name;
@@ -25,9 +29,13 @@ abstract class Player {
     }
 
     public Player(LetterTray t) {
-        this.name = "Scrabble.Player " + playerNumber;
+        this.name = "Player " + playerNumber;
         this.tray = t;
         playerNumber++;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     /**

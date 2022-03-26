@@ -12,7 +12,7 @@ public class GetMovesTest {
                 + "..  m  a  t .. .3 ..\n" + " r  e  S  i  d .. 3.";
         b.populateFromString(boardString);
 
-        LetterTray t = new LetterTray("toloeri");
+        LetterTray t = new LetterTray(7, "toloeri");
         WordTree tr = new WordTree();
         tr.populateFromFile("/Users/hank/IdeaProjects/cs351/scrabble/resources/sowpods.txt");
 

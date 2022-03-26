@@ -8,6 +8,7 @@ public class Board {
     int rows;
     int columns;
     BoardSquare[][] squares;
+    private boolean isFirstPlay = true;
 
     public Board(int rows, int cols) {
         this.rows = rows;
@@ -161,7 +162,7 @@ public class Board {
         ArrayList<Move> toRemove = new ArrayList<>();
 
         for (Move m: moves) {
-            if (m.size() == 0 || !this.connects(m)) {
+            if (m.size() == 0 || !this.connects(m, this.isFirstPlay)) {
                 toRemove.add(m);
             }
         }
@@ -293,8 +294,11 @@ public class Board {
         return moves;
     }
 
-    public boolean connects(Move m) {
+    public boolean connects(Move m, boolean isFirstPlay) {
         for (BoardLocation loc: m.getLocations()) {
+            if (isFirstPlay && m.getLocations().contains(this.getCenter())) {
+                return true;
+            }
             if (this.neighborHasTile(loc)) {
                 return true;
             }
@@ -663,7 +667,7 @@ public class Board {
                 return false;
             }
         }
-
+        this.isFirstPlay = false;
         return true;
     }
 
@@ -800,6 +804,35 @@ public class Board {
         return seq;
     }
 
+    public String toString(boolean showMultipliers) {
+        if (showMultipliers) {
+            return this.toString();
+        } else {
+            String s = "";
+
+            for (int i=0; i<this.rows; i++) {
+                for (int j=0; j<this.columns; j++) {
+                    if (this.squares[i][j].hasTile()) {
+                        if (this.squares[i][j].getTile().get().isBlank()) {
+                            s += "*";
+                        } else {
+                            s += this.squares[i][j].getTile().get().getLetter();
+                        }
+                    } else
+                        s += " ";
+
+                    if (j != this.columns) {
+                        s += " ";
+                    }
+                }
+                if (i != this.rows-1) {
+                    s += "\n";
+                }
+            }
+
+            return s;
+        }
+    }
     public String toString() {
         String s = "";
 
