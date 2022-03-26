@@ -58,7 +58,8 @@ public class GameManager {
 
             }
             this.board.play(m.get());
-            p.getTray().removeAll(m.get().getTiles());
+
+            p.getTray().removeTiles(m.get());
             p.drawToCapacity(this.bag);
             return true;
         } else {

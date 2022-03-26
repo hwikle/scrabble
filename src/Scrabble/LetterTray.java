@@ -62,6 +62,19 @@ public class LetterTray extends ArrayList<LetterTile> implements Cloneable {
         return Optional.empty();
     }
 
+    public void removeTiles(Move m) {
+        LetterTile blankTile;
+
+        for (LetterTile t: m.getTiles()) {
+            if (t.isBlank()) {
+                blankTile = this.getBlank().get();
+                this.remove(blankTile);
+            } else {
+                this.remove(t);
+            }
+        }
+    }
+
     @Override
     public String toString() {
         String s = "";
