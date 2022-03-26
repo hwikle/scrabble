@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class LetterTray extends ArrayList<LetterTile> implements Cloneable {
-    public LetterTray() {}
+    private int capacity;
+    public LetterTray(int capacity) {}
 
-    public LetterTray(String letters) {
-        for (int i=0; i<letters.length(); i++) {
+    public LetterTray(int capacity, String letters) {
+
+        for (int i=0; i<Math.min(letters.length(), capacity); i++) {
             this.add(new LetterTile(letters.charAt(i)));
         }
+    }
+
+    public int getCapacity() {
+        return this.capacity;
     }
 
     public boolean hasLetter(char c) {
