@@ -3,10 +3,12 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
 import Scrabble.*;
@@ -24,6 +26,14 @@ public class Scrabble extends Application {
     public void start(Stage primaryStage) {
         File boardCfg = new File("resources/scrabble_board.txt");
         final Board board;
+        final Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(primaryStage);
+        VBox dialogVbox = new VBox(20);
+        dialogVbox.getChildren().add(new Text("Game Over!"));
+        Scene dialogScene = new Scene(dialogVbox, 300, 200);
+        dialog.setScene(dialogScene);
+
         WordScorer ws = new WordScorer("resources/scrabble_tiles.txt");
         WordTree dict = new WordTree();
         dict.populateFromFile("resources/sowpods.txt");
@@ -65,10 +75,18 @@ public class Scrabble extends Application {
         AnimationTimer a = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if(!game.playTurn()) {
-                    this.stop();
+                if (now % 1000 == 0) {
+                    if (!game.playTurn()) {
+                        System.out.println("Game over!");
+                        this.stop();
+                        for (Player p: game.getPlayers()) {
+                            dialogVbox.getChildren().add(new Text(p.getName() + ": " + p.getScore()));
+                        }
+                        dialogVbox.getChildren().add(new Text(game.getWinner().getName() + " wins!"));
+                        dialog.show();
+                    }
+                    drawTiles(gp, board);
                 }
-                drawTiles(gp, board);
             }
         };
 

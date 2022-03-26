@@ -70,11 +70,11 @@ public class GameManager {
         }
     }
 
-    private static Player getWinner(PlayerList players) {
+    public Player getWinner() {
         int bestScore = 0;
-        Player winner = players.get(0);
+        Player winner = this.players.get(0);
 
-        for (Player p: players) {
+        for (Player p: this.players) {
             if (p.getScore() > bestScore) {
                 bestScore = p.getScore();
                 winner = p;
@@ -96,7 +96,7 @@ public class GameManager {
             System.out.println(p.getName() + ": " + p.getScore());
         }
 
-        System.out.println(this.getWinner(players).getName() + " wins!");
+        System.out.println(this.getWinner().getName() + " wins!");
 
     }
 
