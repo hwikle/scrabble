@@ -1,7 +1,5 @@
 package Scrabble;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.*;
 
 public class Board {
@@ -307,20 +305,6 @@ public class Board {
         return false;
     }
 
-    public boolean isAnchor(BoardLocation loc) {
-        if (!this.isOnBoard(loc)) {
-            return false;
-        } else if (this.getTileAt(loc).isPresent()) {
-            return true;
-        } else {
-            return this.neighborHasTile(loc);
-        }
-    }
-
-    public boolean isAnchor(BoardSquare sq) {
-        return this.isAnchor(this.locationFromSquare(sq));
-    }
-
     public BoardLocation locationFromSquare(BoardSquare sq) {
         for (int row=0; row<this.rows; row++) {
             for (int col=0; col<this.columns; col++) {
@@ -363,30 +347,6 @@ public class Board {
             }
         }
         return false;
-    }
-
-    public SquareSequence reachableFrom(BoardLocation loc, Orientation o, int traySize) {
-        SquareSequence squares = new SquareSequence();
-
-        if (!this.isOnBoard(loc)) {
-            return squares;
-        }
-
-        Optional<BoardLocation> current = Optional.of(loc);
-        BoardSquare sq;
-
-        while (traySize > 0 && current.isPresent()) {
-            sq = this.getSquareAt(current.get()).get();
-            squares.add(sq);
-
-            if (!sq.hasTile()) {
-                traySize--;
-            }
-
-            current = this.getNextLocation(current.get(), o);
-        }
-
-        return squares;
     }
 
     public SquareSequence getSlice(BoardLocation loc, int numSquares, Orientation o) {
@@ -452,41 +412,6 @@ public class Board {
         return cross;
     }
 
-    public Optional<String> wordFromMove(BoardLocation start, BoardLocation end, Move m) {
-        Optional<String> word = Optional.empty();
-        String s = "";
-        BoardLocation loc = start;
-        LetterTile t;
-        Orientation o;
-
-        if (start.getRow() == end.getRow()) {
-            o = Orientation.ACROSS;
-        } else {
-            o = Orientation.DOWN;
-        }
-
-        while (loc != end) {
-            if (!this.getSquareAt(loc).get().hasTile() && !m.getLocations().contains(loc)) {
-                return word;
-            }
-            if (this.getSquareAt(loc).get().hasTile()) {
-                t = this.getSquareAt(loc).get().getTile().get();
-            } else {
-                t = m.getTiles().get(m.getLocations().indexOf(loc));
-            }
-            s += t.getLetter();
-
-            if (this.getNextLocation(loc, o).isPresent()) {
-                loc = this.getNextLocation(loc, o).get();
-            }
-        }
-
-        word = Optional.of(s);
-
-        return word;
-
-    }
-
     public Optional<BoardLocation> getNextLocation(BoardLocation loc, Orientation o) {
         BoardLocation next;
 
@@ -533,31 +458,6 @@ public class Board {
         }
 
         return true;
-    }
-
-    public ArrayList<BoardLocation> getAnchors() {
-        HashSet<BoardLocation> anchors = new HashSet<>();
-        BoardLocation loc;
-        int letterTiles = 0;
-
-        for (int i=0; i<this.rows; i++) {
-            for (int j=0; j<this.columns; j++) {
-                loc = new BoardLocation(i, j);
-                if (this.getSquareAt(loc).get().hasTile()) {
-                    anchors.add(loc);
-                    anchors.addAll(this.getNeighbors(loc));
-                    letterTiles++;
-                }
-            }
-        }
-
-        System.out.println(letterTiles + " letter tiles");
-        System.out.println((anchors.size() - letterTiles) + " tile-adjacent anchors");
-
-        ArrayList<BoardLocation> anchorList = new ArrayList<>();
-        anchorList.addAll(anchors);
-
-        return anchorList;
     }
 
     private BoardLocation getSequenceStart(BoardLocation loc, Orientation o) {
@@ -674,46 +574,6 @@ public class Board {
         return true;
     }
 
-    public boolean play(ArrayList<LetterTile> word, BoardLocation loc, Orientation o) {
-        Optional<BoardSquare> sq;
-        Optional<BoardLocation> next = Optional.of(loc);
-
-        for (int i=0; i<word.size(); i++) {
-            if (!next.isPresent()) {
-                return false;
-            }
-
-            sq = this.getSquareAt(next.get());
-            sq.get().addTile(word.get(i));
-            next = this.getNextLocation(next.get(), o);
-        }
-            return true;
-    }
-
-    public boolean play(String word, BoardLocation loc, Orientation o) {
-        ArrayList<LetterTile> tiles = new ArrayList<>();
-
-        for (char c: word.toCharArray()) {
-            tiles.add(new LetterTile(c));
-        }
-
-        return this.play(tiles, loc, o);
-    }
-
-    private boolean wordFits(ArrayList<LetterTile> word, BoardLocation loc, Orientation o) {
-        int wordLength = word.size();
-        Optional<BoardLocation> next = Optional.of(loc);
-
-        for (int i=0; i<wordLength; i++) {
-            if (!next.isPresent()) {
-                return false;
-            }
-            next = this.getNextLocation(loc, o);
-        }
-
-        return true;
-    }
-
     public MoveScore scoreAllWords(Move m, LetterScores ls, int trayLength) {
         int score = 0;
         ArrayList<Word> words = this.getAllWords(m);
@@ -730,30 +590,6 @@ public class Board {
         return ms;
     }
 
-    /*
-    public int score(Move m, LetterScores ls) {
-        int score = 0;
-        int wordMultiplier = 1;
-        int moveIdx = 0;
-
-        SquareSequence word = this.getPrimaryWord(m);
-
-        for (BoardSquare sq: word) {
-            if (sq.hasTile()) {
-                score += ls.get(sq.getTile().get().getLetter());
-            } else {
-                score += ls.get(m.get(moveIdx).getTile().getLetter()) * sq.getLetterMultiplier();
-                wordMultiplier *= sq.getWordMultiplier();
-                moveIdx++;
-            }
-        }
-
-        score *= wordMultiplier;
-
-        return score;
-    }
-     */
-
     public int score(Word w, LetterScores ls) {
         int score = 0;
         int wordMult = 1;
@@ -768,43 +604,6 @@ public class Board {
         }
 
         return score * wordMult;
-    }
-
-    public int scoreSequence(Move m, SquareSequence seq, LetterScores ls) {
-        int score = 0;
-        int wordMultiplier = 1;
-        BoardLocation loc;
-        LetterTile tile;
-
-        for (BoardSquare sq: seq) {
-            if (sq.hasTile()) {
-                score += ls.get(sq.getTile().get().getLetter());
-            } else {
-                loc = this.locationFromSquare(sq);
-                tile = m.tileByLocation(loc).get();
-                score += ls.get(tile.getLetter()) * sq.getLetterMultiplier();
-                wordMultiplier *= sq.getLetterMultiplier();
-            }
-        }
-
-        return score * wordMultiplier;
-    }
-
-
-
-    private SquareSequence getMaxSquareSequence(BoardLocation loc, Orientation o, int traySize) {
-        SquareSequence seq = new SquareSequence();
-        Optional<BoardLocation> current = Optional.of(loc);
-        BoardSquare square;
-
-        while (traySize > 0 && current.isPresent()) {
-            square = this.getSquareAt(current.get()).get();
-            seq.add(square);
-            current = this.getNextLocation(current.get(), o);
-            traySize--;
-        }
-
-        return seq;
     }
 
     public String toString(boolean showMultipliers) {
@@ -836,6 +635,7 @@ public class Board {
             return s;
         }
     }
+
     public String toString() {
         String s = "";
 
