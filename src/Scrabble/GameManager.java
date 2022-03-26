@@ -26,9 +26,8 @@ public class GameManager {
         this.dict = dict;
     }
 
-    public void setUp() {
+    public void setup() {
         this.bag = new TileBag(tileFpath);
-        //this.scorer = new WordScorer(tileFpath);
         this.bag.shuffle();
         System.out.println("Bag has " + this.bag.size() + " tiles");
 
@@ -60,18 +59,45 @@ public class GameManager {
             }
             this.board.play(m.get());
 
+            p.addScore(ms.getScore());
+
             p.getTray().removeTiles(m.get());
             p.drawToCapacity(this.bag);
+
             return true;
         } else {
             return false;
         }
     }
 
+    private static Player getWinner(PlayerList players) {
+        int bestScore = 0;
+        Player winner = players.get(0);
+
+        for (Player p: players) {
+            if (p.getScore() > bestScore) {
+                bestScore = p.getScore();
+                winner = p;
+            }
+        }
+
+        return winner;
+    }
+
     public void run() {
         while (playTurn()) {
             System.out.println(this.board.toString(false) + "\n");
         }
+
+        System.out.println("Game Over!");
+        System.out.println("Scores: ");
+
+        for (Player p: this.getPlayers()) {
+            System.out.println(p.getName() + ": " + p.getScore());
+        }
+
+        System.out.println(this.getWinner(players).getName() + " wins!");
+
     }
 
 }

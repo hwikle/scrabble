@@ -37,7 +37,7 @@ public class TestScrabble {
             game.addPlayer(cp);
         }
 
-        game.setUp();
+        game.setup();
 
         System.out.println(b);
 
@@ -48,4 +48,6 @@ public class TestScrabble {
         game.run();
 
     }
+
+
 }
