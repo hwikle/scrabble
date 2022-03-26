@@ -140,6 +140,10 @@ public class Board {
         return square;
     }
 
+    public Optional<BoardSquare> getSquareAt(int row, int col) {
+        return getSquareAt(new BoardLocation(row, col));
+    }
+
     public ArrayList<Move> getGlobalPossibleMoves(LetterTray tray, WordTree tree) {
         ArrayList<Move> moves = new ArrayList<>();
         BoardLocation loc;
