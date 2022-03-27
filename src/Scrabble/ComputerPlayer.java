@@ -25,6 +25,11 @@ public class ComputerPlayer extends Player {
         super(name, t);
     }
 
+    public ComputerPlayer(String name, LetterTray t, WordScorer scorer) {
+        super(name, t);
+        this.scorer = scorer;
+    }
+
     public void setDictionary(WordTree dict) {
         this.dict = dict;
     }

@@ -68,6 +68,10 @@ public class GameManager {
         }
     }
 
+    public TileBag getBag() {
+        return this.bag;
+    }
+
     public void skipTurn() {
         this.players.next();
     }

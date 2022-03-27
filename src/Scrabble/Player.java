@@ -1,5 +1,6 @@
 package Scrabble;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -60,6 +61,11 @@ public abstract class Player {
 
     public void drawToCapacity(TileBag bag) {
         while (this.tray.size() < this.tray.getCapacity() && this.draw(bag));
+    }
+
+    public void tradeIn(ArrayList<LetterTile> tiles, TileBag bag) {
+        this.tray.removeAll(tiles);
+        this.drawToCapacity(bag);
     }
 
     public void tradeInAll(TileBag bag) {

@@ -80,12 +80,13 @@ public class Scrabble extends Application {
         GameManager game = new GameManager(board, ws);
         game.setDictionary(dict);
 
-        ComputerPlayer cp = new ComputerPlayer(new LetterTray(7), ws);
-        cp.setDictionary(dict);
+
 
         HumanPlayer hp = new HumanPlayer();
-        game.addPlayer(cp);
+        ComputerPlayer cp = new ComputerPlayer("Computer", new LetterTray(7), ws);
+        cp.setDictionary(dict);
         game.addPlayer(hp);
+        game.addPlayer(cp);
 
         game.setup();
 
@@ -96,10 +97,27 @@ public class Scrabble extends Application {
         GridPane tray = setupGraphicalTray(hp.getTray(), traySelected);
 
         Button submitButton = new Button("Submit Move");
+        Button tradeButton = new Button("Trade Selected Tiles");
+        Button forfeitTurn = new Button("Forfeit Turn");
+
+        tradeButton.setOnMouseClicked((event) -> {
+            if (game.getPlayers().getCurrent().equals(hp)) {
+                hp.tradeIn(traySelected, game.getBag());
+                game.skipTurn();
+            }
+        });
+
+        forfeitTurn.setOnMouseClicked((event) -> {
+            if (game.getPlayers().getCurrent().equals(hp)) {
+                game.skipTurn();
+            }
+        });
 
         submitButton.setAlignment(Pos.CENTER);
+        tradeButton.setAlignment(Pos.CENTER);
+        forfeitTurn.setAlignment(Pos.CENTER);
 
-        HBox playerControls = new HBox(tray, submitButton);
+        HBox playerControls = new HBox(tray, submitButton, new VBox(tradeButton, forfeitTurn));
         playerControls.setAlignment(Pos.CENTER);
         playerControls.setSpacing(20);
 
