@@ -122,9 +122,10 @@ public class Scrabble extends Application {
                 if (game.gameIsOver()) {
                     Player winner = game.getWinner();
                     endgameVbox.getChildren().add(new Text(winner.getName() + " wins!"));
-                    endgameVbox.getChildren().add(scores);
+                    endgameVbox.getChildren().add(new VBox(scores));
                     modal.setScene(endgameScene);
                     modal.show();
+                    this.stop();
                 }
 
                 if (currentPlayer.isReady()) {
