@@ -40,6 +40,12 @@ public class Scrabble extends Application {
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.initOwner(primaryStage);
         VBox endgameVbox = new VBox(20);
+        Button endgameButton = new Button("Exit");
+        endgameButton.setAlignment(Pos.CENTER);
+        endgameVbox.getChildren().addAll(new Text("Game Over!"));
+        endgameVbox.getChildren().add(endgameButton);
+        endgameButton.setOnMouseClicked((event) -> {System.exit(0);});
+
         Scene endgameScene = new Scene(endgameVbox, 300, 200);
 
         VBox invalidMoveVBox = new VBox();
@@ -47,6 +53,11 @@ public class Scrabble extends Application {
 
         invalidMoveVBox.getChildren().addAll(new Text("Invalid Move!"), invalidMoveButton);
         Scene invalidMove = new Scene(invalidMoveVBox, 300, 200);
+
+        VBox cantPlayVBox = new VBox();
+        Button cantPlay = new Button("OK");
+        cantPlayVBox.getChildren().add(cantPlay);
+        Scene cantPlayScene = new Scene(cantPlayVBox);
 
         // Initialize scorer and dictionary
         WordScorer ws = new WordScorer("resources/scrabble_tiles.txt");
@@ -101,13 +112,10 @@ public class Scrabble extends Application {
         root.getChildren().addAll(scores, gp, playerControls);
         System.out.println(root.getChildren().size());
 
-        endgameVbox.getChildren().addAll(new Text("Game Over!"));
-
         drawBoard(gp, board, boardSelected);
 
         int sceneWidth = (int) ((b.getColumns()*1.1 - 0.1) * TILE_WIDTH);
         int sceneHeight = (int) (((b.getRows()+2)*1.1-0.1) * TILE_WIDTH);
-        //int sceneHeight = 1000;
 
         primaryStage.setScene(new Scene(root, sceneWidth, sceneHeight));
 
@@ -121,21 +129,31 @@ public class Scrabble extends Application {
 
                 if (game.gameIsOver()) {
                     Player winner = game.getWinner();
-                    endgameVbox.getChildren().add(new Text(winner.getName() + " wins!"));
-                    endgameVbox.getChildren().add(new VBox(scores));
+                    endgameVbox.getChildren().add(1, new Text(winner.getName() + " wins!"));
+                    endgameVbox.getChildren().add(1, new VBox(scores));
                     modal.setScene(endgameScene);
                     modal.show();
                     this.stop();
                 }
 
                 if (currentPlayer.isReady()) {
-                    if (!board.isValidMove(currentPlayer.getMove(board).get())) {
-                        modal.setScene(invalidMove);
+                    Optional<Move> m = currentPlayer.getMove(board);
+
+                    if (m.isPresent()) {
+                        if (!board.isValidMove(m.get())) {
+                            modal.setScene(invalidMove);
+                            modal.show();
+                            this.stop();
+                        } else {
+                            game.playTurn();
+                            updateScores(scores, game.getPlayers());
+                        }
+                    } else {
+                        cantPlayVBox.getChildren().add(0, new Text(currentPlayer.getName() + " has no possible moves."));
+                        modal.setScene(cantPlayScene);
                         modal.show();
                         this.stop();
-                    } else {
-                        game.playTurn();
-                        updateScores(scores, game.getPlayers());
+                        game.skipTurn();
                     }
                 }
 
@@ -158,6 +176,11 @@ public class Scrabble extends Application {
         });
 
         invalidMoveButton.setOnMouseClicked((event) -> {
+            modal.close();
+            a.start();
+        });
+
+        cantPlay.setOnMouseClicked((event) -> {
             modal.close();
             a.start();
         });
@@ -420,7 +443,7 @@ public class Scrabble extends Application {
         scores.getChildren().clear();
 
         for (Player p: players) {
-            scores.getChildren().add(new Text(p.getName() + " " + p.getScore()));
+            scores.getChildren().add(new Text(p.getName() + ": " + p.getScore()));
         }
     }
 }

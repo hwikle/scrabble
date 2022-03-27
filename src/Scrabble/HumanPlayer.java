@@ -35,7 +35,7 @@ public class HumanPlayer extends Player {
         readyToPlay = true;
     }
 
-    public boolean canPlay() {
+    public boolean canPlay(Board b) {
         return true;
     }
 }

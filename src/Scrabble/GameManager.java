@@ -68,6 +68,10 @@ public class GameManager {
         }
     }
 
+    public void skipTurn() {
+        this.players.next();
+    }
+
     public Player getWinner() {
         int bestScore = 0;
         Player winner = this.players.get(0);

@@ -62,6 +62,11 @@ public abstract class Player {
         while (this.tray.size() < this.tray.getCapacity() && this.draw(bag));
     }
 
+    public void tradeInAll(TileBag bag) {
+        this.tray.clear();
+        this.drawToCapacity(bag);
+    }
+
     public boolean trayIsEmpty() {
         return this.tray.isEmpty();
     }
@@ -70,7 +75,7 @@ public abstract class Player {
         return this.readyToPlay;
     }
 
-    public abstract boolean canPlay();
+    public abstract boolean canPlay(Board b);
 
     @Override
     public String toString() {
