@@ -6,27 +6,34 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.scene.control.Label;
 import Scrabble.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Scanner;
 
 public class Scrabble extends Application {
+    final static int TILE_WIDTH = 40;
 
     public static void main(String[] args) {launch(args);}
 
     @Override
     public void start(Stage primaryStage) {
-        File boardCfg = new File("resources/scrabble_board.txt");
         final Board board;
         final Stage dialog = new Stage();
+
+        File boardCfg = new File("resources/scrabble_board.txt");
+        final ArrayList<BoardSquare> boardSelected = new ArrayList<BoardSquare>();
+        final ArrayList<LetterTile> traySelected = new ArrayList<LetterTile>();
+
+        // Initialize endgame modal
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(primaryStage);
         VBox dialogVbox = new VBox(20);
@@ -34,12 +41,14 @@ public class Scrabble extends Application {
         Scene dialogScene = new Scene(dialogVbox, 300, 200);
         dialog.setScene(dialogScene);
 
+        // Initialize scorer and dictionary
         WordScorer ws = new WordScorer("resources/scrabble_tiles.txt");
         WordTree dict = new WordTree();
         dict.populateFromFile("resources/sowpods.txt");
 
         Board b;
 
+        // Read in board from file
         try {
             Scanner s = new Scanner(boardCfg);
             b = new Board(Integer.valueOf(s.nextLine()));
@@ -53,40 +62,54 @@ public class Scrabble extends Application {
         GameManager game = new GameManager(board, ws);
         game.setDictionary(dict);
 
-        ComputerPlayer cp;
+        ComputerPlayer cp = new ComputerPlayer(new LetterTray(7), ws);
+        cp.setDictionary(dict);
 
-        for (int i=0; i<2; i++) {
-            cp = new ComputerPlayer(new LetterTray(7), ws);
-            cp.setDictionary(dict);
-            game.addPlayer(cp);
-        }
+        HumanPlayer hp = new HumanPlayer();
+        game.addPlayer(cp);
+        game.addPlayer(hp);
 
         game.setup();
 
-        GridPane gp = new GridPane();
-        gp.setHgap(5);
-        gp.setVgap(5);
+        VBox root = new VBox();
+        root.setSpacing(TILE_WIDTH/10.0);
 
-        drawBoard(gp, board);
+        GridPane gp = setupGraphicalBoard(board, boardSelected);
+        GridPane tray = setupGraphicalTray(hp.getTray(), traySelected);
 
-        primaryStage.setScene(new Scene(gp));
+        root.getChildren().addAll(gp, tray);
+
+        drawBoard(gp, board, boardSelected);
+
+        int sceneWidth = (int) ((b.getColumns()*1.1 - 0.1) * TILE_WIDTH);
+        int sceneHeight = (int) (((b.getRows()+1)*1.1-0.1) * TILE_WIDTH);
+
+        primaryStage.setScene(new Scene(root, sceneWidth, sceneHeight));
+
         primaryStage.show();
 
         AnimationTimer a = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if (now % 1000 == 0) {
-                    if (!game.playTurn()) {
-                        System.out.println("Game over!");
-                        this.stop();
-                        for (Player p: game.getPlayers()) {
-                            dialogVbox.getChildren().add(new Text(p.getName() + ": " + p.getScore()));
+                /*
+                if (now % 5000 == 0) { // Only update ~once per second
+                    if (game.turnIsComplete()) {
+                        if (!game.playTurn()) {
+                            System.out.println("Game over!");
+                            this.stop();
+                            for (Player p : game.getPlayers()) {
+                                dialogVbox.getChildren().add(new Text(p.getName() + ": " + p.getScore()));
+                            }
+                            dialogVbox.getChildren().add(new Text(game.getWinner().getName() + " wins!"));
+                            dialog.show();
                         }
-                        dialogVbox.getChildren().add(new Text(game.getWinner().getName() + " wins!"));
-                        dialog.show();
                     }
-                    drawTiles(gp, board);
-                }
+                 */
+                    //System.out.println(selected);
+                    drawBoard(gp, board, boardSelected);
+                    //drawTiles(gp, board, selected);
+                    drawTray(tray, hp.getTray(), traySelected);
+                //}
             }
         };
 
@@ -96,46 +119,154 @@ public class Scrabble extends Application {
 
     }
 
-    public static void drawBoard(GridPane gp, Board board) {
-        Rectangle rect;
+    public static void drawBoard(GridPane gp, Board board, ArrayList<BoardSquare> selected) {
+        BoardSquare sq;
+        boolean inSelected;
 
         for (int i=0; i<board.getRows(); i++) {
-            for (int j=0; j<board.getColumns(); j++) {
+            for (int j = 0; j < board.getColumns(); j++) {
 
-                Color fill = switch (board.getSquareAt(i, j).get().getLetterMultiplier()) {
-                    case 2 -> Color.LIGHTBLUE;
-                    case 3 -> Color.BLUE;
-                    default -> Color.BURLYWOOD;
-                };
+                sq = board.getSquareAt(i, j).get();
+                inSelected = selected.contains(sq);
 
-                fill = switch (board.getSquareAt(i, j).get().getWordMultiplier()) {
-                    case 2 -> Color.PINK;
-                    case 3 -> Color.RED;
-                    default -> fill;
-                };
-
-                rect = new Rectangle(50, 50);
-                rect.setFill(fill);
-                gp.add(new StackPane(rect), i, j);
+                drawBoardSquare(gp, sq, i, j, inSelected);
             }
         }
     }
 
-    public void drawTiles(GridPane gp, Board b) {
+    public static void drawBoardSquare(GridPane gp, BoardSquare sq, int row, int col, boolean selected) {
+        StackPane square = (StackPane) (gp.getChildren().get(row*15 + col));
+        Rectangle rect;
+        Color fill;
+        Text letter;
+        LetterTile t;
+
+        square.getChildren().clear();
+
+        if (sq.hasTile()) {
+            fill = Color.BISQUE;
+        } else {
+            fill = switch (sq.getLetterMultiplier()) {
+                case 2 -> Color.LIGHTBLUE;
+                case 3 -> Color.BLUE;
+                default -> Color.BURLYWOOD;
+            };
+
+            fill = switch (sq.getWordMultiplier()) {
+                case 2 -> Color.PINK;
+                case 3 -> Color.RED;
+                default -> fill;
+            };
+        }
+
+        rect = new Rectangle(TILE_WIDTH, TILE_WIDTH);
+        rect.setFill(fill);
+        rect.setStrokeType(StrokeType.INSIDE);
+
+        if (selected) {
+            rect.setStrokeWidth(3);
+            rect.setStroke(Color.DARKTURQUOISE);
+        } else {
+            rect.setStrokeWidth(0);
+        }
+
+        square.getChildren().add(rect);
+
+        if (sq.hasTile()) {
+            t = sq.getTile().get();
+            letter = new Text(Character.toString(t.getLetter()));
+
+            letter.setStroke(Color.BLACK);
+
+            if (t.isBlank()) {
+                letter.setFill(Color.BISQUE);
+            } else {
+                letter.setFill(Color.BLACK);
+            }
+            letter.setFont(new Font(TILE_WIDTH*3.0/5.0));
+
+            square.getChildren().add(letter);
+        }
+    }
+
+    public static void drawTray(GridPane gp, LetterTray tray, ArrayList<LetterTile> selected) {
+        LetterTile t;
+        boolean inSelected;
+
+        for (int i=0; i<tray.size(); i++) {
+            t = tray.get(i);
+            inSelected = selected.contains(t);
+            drawTile(gp, t, i, inSelected);
+        }
+    }
+
+    public static void drawTile(GridPane gp, LetterTile t, int idx, boolean selected) {
+        StackPane tile = (StackPane) (gp.getChildren().get(idx));
+        Rectangle rect;
+        Text letter;
+
+        tile.getChildren().clear();
+
+        rect = new Rectangle(TILE_WIDTH, TILE_WIDTH);
+        rect.setFill(Color.BISQUE);
+
+        rect.setStrokeType(StrokeType.INSIDE);
+        rect.setStroke(Color.DARKTURQUOISE);
+
+        if (selected) {
+            rect.setStrokeWidth(3);
+        } else {
+            rect.setStrokeWidth(0);
+        }
+
+        letter = new Text(Character.toString(t.getLetter()));
+
+        Color stroke;
+        Color fill;
+
+        if (t.isBlank()) {
+            stroke = Color.BISQUE;
+            fill = Color.BISQUE;
+        } else {
+            stroke = Color.BLACK;
+            fill = Color.BLACK;
+        }
+
+        letter.setStroke(stroke);
+        letter.setFill(fill);
+        letter.setFont(new Font(3.0/5.0*TILE_WIDTH));
+
+        tile.getChildren().addAll(rect, letter);
+    }
+
+    public void drawTiles(GridPane gp, Board b, ArrayList<BoardSquare> selected) {
         Optional<LetterTile> t;
+        BoardSquare sq;
         Rectangle rect;
         Text l;
+        StackPane gsq;
 
         for (int i=0; i<b.getRows(); i++) {
             for (int j=0; j<b.getColumns(); j++) {
-                t = b.getSquareAt(i, j).get().getTile();
+                sq = b.getSquareAt(i, j).get();
+
+                if (selected.contains(sq)) {
+                    gsq = (StackPane) gp.getChildren().get(i*b.getColumns()+j);
+                    rect = new Rectangle(TILE_WIDTH, TILE_WIDTH);
+                    rect.setFill(Color.TRANSPARENT);
+                    rect.setStrokeType(StrokeType.INSIDE); // Prevents tiles from changing size
+                    rect.setStrokeWidth(3);
+                    rect.setStroke(Color.DARKTURQUOISE);
+                    gp.add(rect, i, j);
+                }
+                t = sq.getTile();
 
                 if (t.isPresent()) {
-                    rect = new Rectangle(50, 50);
+                    rect = new Rectangle(TILE_WIDTH, TILE_WIDTH);
                     rect.setFill(Color.BISQUE);
-                    StackPane sq = (StackPane) gp.getChildren().get(i*b.getColumns()+j);
+                    gsq = (StackPane) gp.getChildren().get(i*b.getColumns()+j);
                     l = new Text(Character.toString(t.get().getLetter()));
-                    l.setFont(new Font(30));
+                    l.setFont(new Font(3.0/5.0 * TILE_WIDTH));
                     l.setStroke(Color.BLACK);
 
                     if (t.get().isBlank()) {
@@ -143,10 +274,86 @@ public class Scrabble extends Application {
                     } else {
                         l.setFill(Color.BLACK);
                     }
-                    sq.getChildren().addAll(rect, l);
+                    gsq.getChildren().addAll(rect, l);
                 }
             }
         }
 
+    }
+
+    public void drawTray(GridPane gp, LetterTray tray) {
+        Rectangle rect;
+        StackPane tile;
+        Text letter;
+
+        gp.getChildren().clear();
+
+        for (int i=0; i<tray.size(); i++) {
+            rect = new Rectangle(TILE_WIDTH, TILE_WIDTH);
+            rect.setFill(Color.BISQUE);
+            tile = new StackPane(rect);
+
+            if (!tray.get(i).isBlank()) {
+                letter = new Text(Character.toString(tray.get(i).getLetter()));
+                letter.setFont(new Font(3.0/5.0 * TILE_WIDTH));
+                tile.getChildren().add(letter);
+            }
+
+            gp.add(tile, i, 0);
+        }
+    }
+
+    private static GridPane setupGraphicalBoard(Board board, ArrayList<BoardSquare> selected) {
+        StackPane sp;
+        GridPane gp = new GridPane();
+
+        for (int i=0; i<board.getRows(); i++) {
+            for (int j=0; j<board.getColumns(); j++) {
+                sp = new StackPane();
+
+                final BoardSquare sq = board.getSquareAt(i, j).get();
+
+                sp.setOnMouseClicked(event -> {
+                    if (selected.contains(sq)) {
+                        selected.remove(sq);
+                    } else {
+                        selected.add(sq);
+                    }
+                    //System.out.println(selected);
+                });
+
+                gp.add(sp, i, j);
+            }
+        }
+
+        gp.setHgap(TILE_WIDTH/10.0);
+        gp.setVgap(TILE_WIDTH/10.0);
+
+        return gp;
+    }
+
+    private static GridPane setupGraphicalTray(LetterTray tray, ArrayList<LetterTile> selected) {
+        StackPane sp;
+        GridPane gp = new GridPane();
+
+        for (int i=0; i<tray.size(); i++) {
+            sp = new StackPane();
+
+            final LetterTile t = tray.get(i);
+
+            sp.setOnMouseClicked(event -> {
+                if (selected.contains(t)) {
+                    selected.remove(t);
+                } else {
+                    selected.add(t);
+                }
+            });
+
+            gp.add(sp, i, 0);
+        }
+
+        gp.setHgap(TILE_WIDTH/10.0);
+
+        return gp;
     }
 }

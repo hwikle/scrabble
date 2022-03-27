@@ -1,8 +1,10 @@
 package Scrabble;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 public class HumanPlayer extends Player {
+    private ArrayList<BoardSquare> selected;
 
     public HumanPlayer() {
         super();
