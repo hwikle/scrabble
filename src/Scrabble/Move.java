@@ -4,6 +4,8 @@ import Scrabble.BoardLocation;
 import Scrabble.Orientation;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Optional;
 
 public class Move extends ArrayList<TileLocationPair> {
@@ -17,6 +19,8 @@ public class Move extends ArrayList<TileLocationPair> {
         for (int i=0; i<tiles.size(); i++) {
             this.add(new TileLocationPair(tiles.get(i), locs.get(i)));
         }
+
+        this.sort();
     }
 
     public ArrayList<LetterTile> getTiles() {
@@ -87,6 +91,21 @@ public class Move extends ArrayList<TileLocationPair> {
         }
 
         return o;
+    }
+
+    private void sort() {
+        Orientation o = this.getOrientation();
+
+        Collections.sort(this, new Comparator<TileLocationPair>() {
+            @Override
+            public int compare(TileLocationPair o1, TileLocationPair o2) {
+                if (o.equals(Orientation.ACROSS)) {
+                    return Integer.compare(o1.getLocation().getColumn(), o2.getLocation().getColumn());
+                } else {
+                    return Integer.compare(o1.getLocation().getRow(), o2.getLocation().getRow());
+                }
+            }
+        });
     }
 
     public String toString() {
