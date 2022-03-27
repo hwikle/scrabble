@@ -9,6 +9,10 @@ public class PlayerList extends ArrayList<Player> {
         currentIdx = 0;
     }
 
+    public Player getCurrent() {
+        return this.get(this.currentIdx);
+    }
+
     Player next() {
         Player nextPlayer = this.get(currentIdx);
 

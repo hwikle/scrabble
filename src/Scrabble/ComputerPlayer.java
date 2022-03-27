@@ -39,5 +39,7 @@ public class ComputerPlayer extends Player {
         return Optional.of(this.scorer.getBestMove(b, moves, this.tray.getCapacity()));
     }
 
-
+    public boolean canPlay() {
+        return true;
+    }
 }

@@ -1,9 +1,5 @@
 package Scrabble;
 
-import Scrabble.*;
-
-import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -17,6 +13,7 @@ public abstract class Player {
     protected LetterTray tray;
     protected static int playerNumber = 1;
     private int score = 0;
+    private boolean readyToPlay = true;
 
     public Player() {
         this(new LetterTray(7));
@@ -50,7 +47,7 @@ public abstract class Player {
         return this.tray;
     }
 
-    abstract Optional<Move> getMove(Board b);
+    public abstract Optional<Move> getMove(Board b);
 
     public boolean draw(TileBag bag) {
         if (bag.isEmpty()) {
@@ -68,6 +65,12 @@ public abstract class Player {
     public boolean trayIsEmpty() {
         return this.tray.isEmpty();
     }
+
+    public boolean isReady() {
+        return this.readyToPlay;
+    }
+
+    public abstract boolean canPlay();
 
     @Override
     public String toString() {

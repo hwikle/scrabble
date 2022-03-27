@@ -9,13 +9,11 @@ public class GameManager {
     private String tileFpath = "resources/scrabble_tiles.txt";
     private WordTree dict = new WordTree();
     private WordScorer scorer;
-    private boolean turnComplete;
 
     public GameManager(Board b, WordScorer ws) {
         this.board = b;
         this.scorer = ws;
         this.players = new PlayerList();
-        this.turnComplete = true;
     }
 
     public void addPlayer(Player p) {
@@ -42,13 +40,10 @@ public class GameManager {
 
     public boolean playTurn() {
         Player p = this.players.next();
-        this.turnComplete = false;
         System.out.println(p.getName() + ": " + p.getTray());
         Optional<Move> m = p.getMove(this.board);
 
         MoveScore ms;
-
-        this.turnComplete = true;
 
         if (m.isPresent()) {
             ms = scorer.scoreMove(this.board, m.get(), p.getTray().getCapacity());
@@ -71,10 +66,6 @@ public class GameManager {
         } else {
             return false;
         }
-    }
-
-    public boolean turnIsComplete() {
-        return this.turnComplete;
     }
 
     public Player getWinner() {
@@ -105,6 +96,11 @@ public class GameManager {
 
         System.out.println(this.getWinner().getName() + " wins!");
 
+    }
+
+    public boolean gameIsOver() {
+        return this.bag.isEmpty();
+        //return (this.bag.isEmpty() && this.players.getCurrent().canPlay());
     }
 
 }

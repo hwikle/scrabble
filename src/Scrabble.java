@@ -1,7 +1,9 @@
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -11,6 +13,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.control.Button;
 import Scrabble.*;
 
 import java.io.File;
@@ -27,19 +30,23 @@ public class Scrabble extends Application {
     @Override
     public void start(Stage primaryStage) {
         final Board board;
-        final Stage dialog = new Stage();
+        final Stage modal = new Stage();
 
         File boardCfg = new File("resources/scrabble_board.txt");
         final ArrayList<BoardSquare> boardSelected = new ArrayList<BoardSquare>();
         final ArrayList<LetterTile> traySelected = new ArrayList<LetterTile>();
 
         // Initialize endgame modal
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.initOwner(primaryStage);
-        VBox dialogVbox = new VBox(20);
-        dialogVbox.getChildren().add(new Text("Game Over!"));
-        Scene dialogScene = new Scene(dialogVbox, 300, 200);
-        dialog.setScene(dialogScene);
+        modal.initModality(Modality.APPLICATION_MODAL);
+        modal.initOwner(primaryStage);
+        VBox endgameVbox = new VBox(20);
+        Scene endgameScene = new Scene(endgameVbox, 300, 200);
+
+        VBox invalidMoveVBox = new VBox();
+        Button invalidMoveButton = new Button("Try again");
+
+        invalidMoveVBox.getChildren().addAll(new Text("Invalid Move!"), invalidMoveButton);
+        Scene invalidMove = new Scene(invalidMoveVBox, 300, 200);
 
         // Initialize scorer and dictionary
         WordScorer ws = new WordScorer("resources/scrabble_tiles.txt");
@@ -77,41 +84,82 @@ public class Scrabble extends Application {
         GridPane gp = setupGraphicalBoard(board, boardSelected);
         GridPane tray = setupGraphicalTray(hp.getTray(), traySelected);
 
-        root.getChildren().addAll(gp, tray);
+        Button submitButton = new Button("Submit Move");
+
+        submitButton.setAlignment(Pos.CENTER);
+
+        HBox playerControls = new HBox(tray, submitButton);
+        playerControls.setAlignment(Pos.CENTER);
+        playerControls.setSpacing(20);
+
+        VBox scores = new VBox();
+
+        for (Player p: game.getPlayers()) {
+            scores.getChildren().add(new Text(p.getName() + ": " + p.getScore()));
+        }
+
+        root.getChildren().addAll(scores, gp, playerControls);
+        System.out.println(root.getChildren().size());
+
+        endgameVbox.getChildren().addAll(new Text("Game Over!"));
 
         drawBoard(gp, board, boardSelected);
 
         int sceneWidth = (int) ((b.getColumns()*1.1 - 0.1) * TILE_WIDTH);
-        int sceneHeight = (int) (((b.getRows()+1)*1.1-0.1) * TILE_WIDTH);
+        int sceneHeight = (int) (((b.getRows()+2)*1.1-0.1) * TILE_WIDTH);
+        //int sceneHeight = 1000;
 
         primaryStage.setScene(new Scene(root, sceneWidth, sceneHeight));
 
+        System.out.println(root.getChildren().size());
         primaryStage.show();
 
         AnimationTimer a = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                /*
-                if (now % 5000 == 0) { // Only update ~once per second
-                    if (game.turnIsComplete()) {
-                        if (!game.playTurn()) {
-                            System.out.println("Game over!");
-                            this.stop();
-                            for (Player p : game.getPlayers()) {
-                                dialogVbox.getChildren().add(new Text(p.getName() + ": " + p.getScore()));
-                            }
-                            dialogVbox.getChildren().add(new Text(game.getWinner().getName() + " wins!"));
-                            dialog.show();
-                        }
+                Player currentPlayer = game.getPlayers().getCurrent();
+
+                if (game.gameIsOver()) {
+                    Player winner = game.getWinner();
+                    endgameVbox.getChildren().add(new Text(winner.getName() + " wins!"));
+                    endgameVbox.getChildren().add(scores);
+                    modal.setScene(endgameScene);
+                    modal.show();
+                }
+
+                if (currentPlayer.isReady()) {
+                    if (!board.isValidMove(currentPlayer.getMove(board).get())) {
+                        modal.setScene(invalidMove);
+                        modal.show();
+                        this.stop();
+                    } else {
+                        game.playTurn();
+                        updateScores(scores, game.getPlayers());
                     }
-                 */
-                    //System.out.println(selected);
-                    drawBoard(gp, board, boardSelected);
-                    //drawTiles(gp, board, selected);
-                    drawTray(tray, hp.getTray(), traySelected);
-                //}
+                }
+
+                drawBoard(gp, board, boardSelected);
+                drawTray(tray, hp.getTray(), traySelected);
             }
         };
+
+        submitButton.setOnMouseClicked((event) -> {
+            if (traySelected.size() == boardSelected.size()) {
+                hp.setSelected(traySelected, boardSelected, board);
+            } else {
+                a.stop();
+                modal.setScene(invalidMove);
+                invalidMoveVBox.getChildren().add(1, new Text(tray.toString()));
+                modal.show();
+            }
+            traySelected.clear();
+            boardSelected.clear();
+        });
+
+        invalidMoveButton.setOnMouseClicked((event) -> {
+            modal.close();
+            a.start();
+        });
 
         a.start();
 
@@ -192,11 +240,17 @@ public class Scrabble extends Application {
     public static void drawTray(GridPane gp, LetterTray tray, ArrayList<LetterTile> selected) {
         LetterTile t;
         boolean inSelected;
+        StackPane sp;
 
-        for (int i=0; i<tray.size(); i++) {
-            t = tray.get(i);
-            inSelected = selected.contains(t);
-            drawTile(gp, t, i, inSelected);
+        for (int i=0; i<tray.getCapacity(); i++) {
+            if (i < tray.size()) {
+                t = tray.get(i);
+                inSelected = selected.contains(t);
+                drawTile(gp, t, i, inSelected);
+            } else {
+                sp = (StackPane) (gp.getChildren().get(i));
+                sp.getChildren().clear();
+            }
         }
     }
 
@@ -339,13 +393,17 @@ public class Scrabble extends Application {
         for (int i=0; i<tray.size(); i++) {
             sp = new StackPane();
 
-            final LetterTile t = tray.get(i);
+            final int idx = i;
+            final LetterTray tr = tray;
 
             sp.setOnMouseClicked(event -> {
-                if (selected.contains(t)) {
-                    selected.remove(t);
+                if (idx > tr.size()-1) {
+                    return;
+                }
+                if (selected.contains(tr.get(idx))) {
+                    selected.remove(tr.get(idx));
                 } else {
-                    selected.add(t);
+                    selected.add(tr.get(idx));
                 }
             });
 
@@ -355,5 +413,13 @@ public class Scrabble extends Application {
         gp.setHgap(TILE_WIDTH/10.0);
 
         return gp;
+    }
+
+    public static void updateScores(VBox scores, PlayerList players) {
+        scores.getChildren().clear();
+
+        for (Player p: players) {
+            scores.getChildren().add(new Text(p.getName() + " " + p.getScore()));
+        }
     }
 }

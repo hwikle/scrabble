@@ -120,10 +120,6 @@ public class Board {
         }
     }
 
-    public void setLetterMultipliers(int[][] multipliers) {}
-
-    public void setWordMultipliers(int[][] multipliers) {}
-
     public BoardLocation getCenter() {
         // NOTE: If board dimensions are even, will return location to right of
         // and below center
@@ -315,6 +311,52 @@ public class Board {
         }
 
         return false;
+    }
+
+    public boolean collides(Move m) {
+        for (BoardLocation loc: m.getLocations()) {
+            if (this.getSquareAt(loc).get().hasTile()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean isContinuous(Move m) {
+        if (m.size() == 0) {
+            return true;
+        }
+
+        BoardLocation loc = m.getLocations().get(0);
+        BoardLocation last = m.getLocations().get(m.size()-1);
+
+        while (!loc.equals(last)) {
+            if (!m.getLocations().contains(loc) && !this.getSquareAt(loc).get().hasTile()) {
+                return false;
+            }
+            loc = this.getNextLocation(loc, m.getOrientation()).get();
+        }
+
+        return true;
+    }
+
+    public boolean isValidMove(Move m) {
+        if (!m.isLinear()) {
+            System.out.println("Move is not linear");
+            return false;
+        } else if (!this.isContinuous(m)) {
+            System.out.println("Move is not continuous");
+            return false;
+        } else if (this.collides(m)) {
+            System.out.println("Move collides");
+            return false;
+        } else if (!this.connects(m, this.isFirstPlay)) {
+            System.out.println("Move does not connect");
+            return false;
+        }
+
+        return true;
     }
 
     public BoardLocation locationFromSquare(BoardSquare sq) {
