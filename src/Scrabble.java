@@ -167,11 +167,15 @@ public class Scrabble extends Application {
                             updateScores(scores, game.getPlayers());
                         }
                     } else {
-                        cantPlayVBox.getChildren().add(0, new Text(currentPlayer.getName() + " has no possible moves."));
-                        modal.setScene(cantPlayScene);
-                        modal.show();
-                        this.stop();
-                        game.skipTurn();
+                        if (currentPlayer.equals(cp)) {
+                            cp.tradeInAll(game.getBag());
+                            cantPlayVBox.getChildren().add(0, new Text(currentPlayer.getName() + " has no possible moves."));
+                            cantPlayVBox.getChildren().add(0, new Text(currentPlayer.getName() + " trades in all tiles."));
+                            modal.setScene(cantPlayScene);
+                            modal.show();
+                            this.stop();
+                            game.skipTurn();
+                        }
                     }
                 }
 
