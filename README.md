@@ -61,6 +61,7 @@ and choosing whichever move has the maximum score.
 # Known Issues
 
 1. When the computer player has both blanks in their tray, the game will hang for longer than five sections while the computer considers their move.
+2. When playing blank tiles, player is not currently prompted to declare a letter for the blank tile.
 
 # Planned Features
 
