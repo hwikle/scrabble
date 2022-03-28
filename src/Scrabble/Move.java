@@ -20,7 +20,7 @@ public class Move extends ArrayList<TileLocationPair> {
             this.add(new TileLocationPair(tiles.get(i), locs.get(i)));
         }
 
-        this.sort();
+        //this.sort();
     }
 
     public ArrayList<LetterTile> getTiles() {

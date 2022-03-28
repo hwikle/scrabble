@@ -18,6 +18,7 @@ public class WordTree extends HashMap<Character, WordTree> {
         try {
             freader = new Scanner(infile);
         } catch (FileNotFoundException e) {
+            System.out.println("File not found");
             freader = new Scanner(System.in);
         }
 

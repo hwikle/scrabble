@@ -2,6 +2,7 @@ import Scrabble.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.security.spec.RSAOtherPrimeInfo;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
@@ -10,33 +11,42 @@ import java.util.Scanner;
 
 public class WordSolver {
     public static void main(String[] args) {
-        String dictFile = args[0];
-        String boardCfgFile = args[1];
+        String dictFile;
+        Scanner s = new Scanner(System.in);
 
-        System.out.println(dictFile);
-        System.out.println(boardCfgFile);
+        System.out.println("Enter board configuration file path: ");
+        String boardCfgFile = s.nextLine().strip();
 
-        // Set up dictionary
+        try {
+            dictFile = args[0];
+        } catch (IndexOutOfBoundsException e) {
+            dictFile = "resources/sowpods.txt";
+        }
+
         WordTree dict = new WordTree();
+        //String dictFile = "/Users/hank/IdeaProjects/cs351/scrabble/resources/sowpods.txt";
+        //String boardCfgFile = "/Users/hank/IdeaProjects/cs351/scrabble/resources/example_input.txt";
         dict.populateFromFile(dictFile);
-        LetterScores scores = new LetterScores("/Users/hank/IdeaProjects/cs351/scrabble/resources/letterscores.txt");
+        //LetterScores scores = new LetterScores("scrabble_tiles.txt");
 
-        WordScorer scorer = new WordScorer("resources/scrabble_tiles.txt");
+        //System.out.println("Creating word scorer...");
+        WordScorer scorer = new WordScorer("/Users/hank/IdeaProjects/cs351/scrabble/resources/scrabble_tiles.txt");
         Board b;
-        Scanner s;
+        Scanner freader;
         LetterTray tray;
         Optional<String> l;
 
+        //System.out.println("Configuring board...");
         try {
-            s = new Scanner(new File(boardCfgFile));
-            while (s.hasNextLine()) {
-                l = getNextNonemptyLine(s);
+            freader = new Scanner(new File(boardCfgFile));
+            while (freader.hasNextLine()) {
+                l = getNextNonemptyLine(freader);
 
                 if (l.isPresent()) {
                     b = new Board(Integer.valueOf(l.get()));
-                    b.populateFromScanner(s);
+                    b.populateFromScanner(freader);
 
-                    l = getNextNonemptyLine(s);
+                    l = getNextNonemptyLine(freader);
 
                     if (l.isPresent()) {
                         tray = new LetterTray(7, l.get());
@@ -57,7 +67,13 @@ public class WordSolver {
         System.out.println("Tray:" + tray);
 
         Move best = ws.getBestMove(b, moves, tray.getCapacity());
-        int bestScore = ws.scoreMove(b, best, tray.getCapacity()).getScore();
+        //System.out.println(best);
+        MoveScore ms = ws.scoreMove(b, best, tray.getCapacity());
+        //System.out.println(ms);
+        //System.out.println(ms.getBonus());
+        //System.out.println(best.size());
+        //System.out.println(tray.getCapacity());
+        int bestScore = ms.getScore();
 
         System.out.println("Solution " + b.getWord(best, best.getOrientation()).toString(b) + " has " + bestScore + " points ");
 

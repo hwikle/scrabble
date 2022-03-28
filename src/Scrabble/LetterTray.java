@@ -13,6 +13,7 @@ public class LetterTray extends ArrayList<LetterTile> implements Cloneable {
     }
 
     public LetterTray(int capacity, String letters) {
+        this.capacity = capacity;
 
         for (int i=0; i<Math.min(letters.length(), capacity); i++) {
             this.add(new LetterTile(letters.charAt(i)));

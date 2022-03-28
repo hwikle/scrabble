@@ -37,6 +37,8 @@ public class WordScorer {
             ms.add(new WordScore(w.toString(b), score));
         }
 
+        //System.out.println(m.size());
+
         if (m.size() == trayCapacity) {
             ms.setBonus(50);
         }

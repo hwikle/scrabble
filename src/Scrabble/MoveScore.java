@@ -15,6 +15,10 @@ public class MoveScore extends ArrayList<WordScore> {
         return score + bonus;
     }
 
+    public int getBonus() {
+        return this.bonus;
+    }
+
     public void setBonus(int bonus) {
         this.bonus = bonus;
     }
