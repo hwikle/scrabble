@@ -249,6 +249,8 @@ public class Board {
                                 if (tree.containsWord(cross)) {
                                     moves.add(newMove);
                                 }
+                            } else {
+                                moves.add(newMove);
                             }
                         }
 
@@ -552,6 +554,7 @@ public class Board {
 
     public Word getWord(Move m, Orientation o) {
         BoardLocation start, end;
+
         start = this.getSequenceStart(m.getLocations().get(0), m, o).get();
         end = this.getSequenceEnd(m.getLocations().get(m.getLocations().size() - 1), m, o).get();
 
@@ -560,8 +563,6 @@ public class Board {
 
     public Word getPrimaryWord(Move m) {
         BoardLocation start, end;
-
-        assert (m.size() > 0);
 
         start = this.getSequenceStart(m.getLocations().get(0), m, m.getOrientation()).get();
         end = this.getSequenceEnd(m.getLocations().get(0), m, m.getOrientation()).get();
@@ -587,6 +588,10 @@ public class Board {
 
     public ArrayList<Word> getAllWords(Move m) {
         ArrayList<Word> words = new ArrayList<>();
+
+        if (m.size() == 0) {
+            return words;
+        }
 
         Word primaryWord = this.getPrimaryWord(m);
 
