@@ -16,7 +16,7 @@ public class LetterScores extends HashMap<Character,Integer> {
         try {
             s = new Scanner(infile);
         } catch (FileNotFoundException e) {
-f            System.out.println("File not found");
+            System.out.println("File not found");
             s = new Scanner(System.in);
         }
 
