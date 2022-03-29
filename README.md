@@ -4,7 +4,9 @@
 
 Word solver is meant to be run from the command line. Usage is:
 
-`java -jar wordsolver.jar <dictfile> <boardconfig>`
+`java -jar wordsolver.jar <dictfile>`
+
+On startup, program will request path to a board configuration file. Format of this file is the same as that described in project description, and the format of the example input file provided by Brooke. As in the example file, this file may contain multiple input cases, but they _must not be separated by blank lines_.
 
 ## Scrabble Game
 
